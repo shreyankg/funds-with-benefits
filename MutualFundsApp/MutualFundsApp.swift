@@ -1,10 +1,10 @@
 import SwiftUI
 
 @main
-struct MutualFundsApp: App {
+struct FundsWithBenefitsApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SplashScreenView()
         }
     }
 }
