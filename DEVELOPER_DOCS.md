@@ -316,9 +316,15 @@ xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name
 - App launch and basic navigation
 - Search functionality and text input
 - Tab navigation between Funds, Favorites, About
-- Fund detail view navigation
+- Fund detail view navigation (robust element detection)
 - Category filtering interactions
-- Pull-to-refresh gestures
+- Pull-to-refresh gestures (multiple scrollable element strategies)
+
+**Recent Improvements**:
+- Fixed `testFundDetailNavigation()` with multiple element detection strategies
+- Fixed `testPullToRefresh()` with fallback scrollable element handling
+- Enhanced test robustness for SwiftUI NavigationLink and List components
+- Added longer wait times for API data loading in tests
 
 ### Integration Testing
 - **API Integration**: Network calls and error handling
