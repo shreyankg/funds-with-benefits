@@ -58,20 +58,38 @@ final class MutualFundsAppUITests: XCTestCase {
         // Navigate to Funds tab
         app.tabBars.buttons["Funds"].tap()
         
-        // Wait for search field to appear
+        // Wait for search field to appear with longer timeout
         let searchField = app.textFields.firstMatch
         let exists = NSPredicate(format: "exists == true")
         expectation(for: exists, evaluatedWith: searchField, handler: nil)
-        waitForExpectations(timeout: 10, handler: nil)
+        waitForExpectations(timeout: 15, handler: nil)
+        
+        // Wait additional time for API data to load completely
+        Thread.sleep(forTimeInterval: 8)
         
         // Tap on search field and enter text
         searchField.tap()
         searchField.typeText("SBI")
         
-        // Verify search is working (results should be filtered)
-        // Note: This test assumes search is working - in a real scenario,
-        // we'd verify the list updates with filtered results
+        // Wait a moment for search results to update
+        Thread.sleep(forTimeInterval: 2)
+        
+        // Verify search text was entered correctly
         XCTAssertTrue(searchField.value as? String == "SBI")
+        
+        // Clear the search to test that functionality too
+        searchField.tap()
+        // Select all text and delete
+        searchField.typeText(XCUIKeyboardKey.command.rawValue + "a")
+        searchField.typeText(XCUIKeyboardKey.delete.rawValue)
+        
+        // Wait for clear to take effect
+        Thread.sleep(forTimeInterval: 1)
+        
+        // Verify search was cleared (empty string or placeholder text)
+        let searchValue = searchField.value as? String ?? ""
+        XCTAssertTrue(searchValue.isEmpty || searchValue.contains("Search"), 
+                     "Search field should be empty or show placeholder after clearing")
     }
     
     func testTabNavigation() throws {

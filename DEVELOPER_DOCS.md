@@ -124,6 +124,14 @@ The `APIService` implements comprehensive error handling:
 - Invalid URLs
 - HTTP status errors
 
+### JSON Parsing Robustness
+Enhanced JSON parsing with custom Codable implementations to handle API format variations:
+- **Flexible scheme_code parsing**: Handles both integer and string values from API
+- **MutualFund model**: Custom decoder for `schemeCode` field variations
+- **FundMeta model**: Custom decoder for `scheme_code` field variations  
+- **Backward compatibility**: Supports legacy and updated API response formats
+- **Error resilience**: Graceful handling of unexpected data types
+
 ### Caching Strategy
 - **Fund List**: Cached for 1 hour
 - **Fund History**: Cached for 30 minutes
@@ -292,10 +300,14 @@ struct PerformanceChartView: View {
 
 **Test Coverage**:
 - MutualFund model properties and categorization
+- MutualFund JSON parsing with integer/string scheme codes
 - NAVData parsing and date conversion
+- FundMeta JSON parsing with flexible scheme_code handling
+- FundHistory complete parsing with metadata
 - FundDetails performance calculations
 - DataCache storage and retrieval
 - Double formatting extensions
+- JSON encoding/decoding round-trip tests
 
 **Running Tests**:
 ```bash
@@ -314,7 +326,7 @@ xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name
 
 **Test Coverage**:
 - App launch and basic navigation
-- Search functionality and text input
+- Search functionality with text input and clearing
 - Tab navigation between Funds, Favorites, About
 - Fund detail view navigation (robust element detection)
 - Category filtering interactions
@@ -323,8 +335,17 @@ xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name
 **Recent Improvements**:
 - Fixed `testFundDetailNavigation()` with multiple element detection strategies
 - Fixed `testPullToRefresh()` with fallback scrollable element handling
+- Enhanced `testSearchFunctionality()` with improved timeouts and search clearing tests
 - Enhanced test robustness for SwiftUI NavigationLink and List components
 - Added longer wait times for API data loading in tests
+- Improved JSON parsing flexibility for API response variations
+
+**Test Reliability Enhancements**:
+- Extended timeouts from 10s to 15s for API-dependent tests
+- Added 8-second data loading waits for comprehensive fund list loading
+- Multiple fallback strategies for SwiftUI element detection
+- Robust handling of different SwiftUI component hierarchies
+- Comprehensive search field interaction testing including clear functionality
 
 ### Integration Testing
 - **API Integration**: Network calls and error handling
@@ -447,12 +468,24 @@ xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name
    - Verify API endpoint availability
    - Clear app cache
 
-2. **Performance Issues**
+2. **JSON Parsing Errors**
+   - Check for API format changes (integer vs string scheme codes)
+   - Verify model compatibility with API responses
+   - Review custom Codable implementations for flexibility
+   - Test with different API response formats
+
+3. **Performance Issues**
    - Monitor memory usage
    - Check for retain cycles
    - Optimize heavy computations
 
-3. **UI Problems**
+4. **UI Test Flakiness**
+   - Ensure adequate wait times for API data loading
+   - Use multiple element detection strategies for SwiftUI components
+   - Test with different simulator configurations
+   - Verify element accessibility identifiers
+
+5. **UI Problems**
    - Test on different screen sizes
    - Verify iOS version compatibility
    - Check SwiftUI preview issues
@@ -465,6 +498,6 @@ xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name
 
 ---
 
-**Last Updated**: January 2025
+**Last Updated**: July 2025
 **Version**: 1.0.0
 **Contact**: Development Team

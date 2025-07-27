@@ -236,6 +236,113 @@ final class MutualFundsAppTests: XCTestCase {
         XCTAssertEqual(fundDetails.formattedDailyChangePercentage, "+0.42%")
     }
     
+    // MARK: - FundMeta JSON Parsing Tests
+    
+    func testFundMetaJSONDecodingWithIntegerSchemeCode() throws {
+        let jsonData = """
+        {
+            "fund_house": "SBI Mutual Fund",
+            "scheme_type": "Open Ended Schemes",
+            "scheme_category": "Debt Scheme - Overnight Fund",
+            "scheme_code": 101206,
+            "scheme_name": "SBI Overnight Fund - Regular Plan - Growth",
+            "isin_growth": "INF200K01LQ9",
+            "isin_div_reinvestment": null
+        }
+        """.data(using: .utf8)!
+        
+        let fundMeta = try JSONDecoder().decode(FundMeta.self, from: jsonData)
+        
+        XCTAssertEqual(fundMeta.scheme_code, "101206")
+        XCTAssertEqual(fundMeta.fund_house, "SBI Mutual Fund")
+        XCTAssertEqual(fundMeta.scheme_type, "Open Ended Schemes")
+        XCTAssertEqual(fundMeta.scheme_category, "Debt Scheme - Overnight Fund")
+        XCTAssertEqual(fundMeta.scheme_name, "SBI Overnight Fund - Regular Plan - Growth")
+        XCTAssertEqual(fundMeta.isin_growth, "INF200K01LQ9")
+        XCTAssertNil(fundMeta.isin_div_reinvestment)
+    }
+    
+    func testFundMetaJSONDecodingWithStringSchemeCode() throws {
+        let jsonData = """
+        {
+            "fund_house": "HDFC Mutual Fund",
+            "scheme_type": "Open Ended Schemes",
+            "scheme_category": "Equity Scheme - Large Cap Fund",
+            "scheme_code": "101307",
+            "scheme_name": "HDFC Large Cap Fund - Regular Plan - Growth",
+            "isin_growth": "INF179K01158",
+            "isin_div_reinvestment": "INF179K01166"
+        }
+        """.data(using: .utf8)!
+        
+        let fundMeta = try JSONDecoder().decode(FundMeta.self, from: jsonData)
+        
+        XCTAssertEqual(fundMeta.scheme_code, "101307")
+        XCTAssertEqual(fundMeta.fund_house, "HDFC Mutual Fund")
+        XCTAssertEqual(fundMeta.scheme_name, "HDFC Large Cap Fund - Regular Plan - Growth")
+        XCTAssertEqual(fundMeta.isin_growth, "INF179K01158")
+        XCTAssertEqual(fundMeta.isin_div_reinvestment, "INF179K01166")
+    }
+    
+    func testFundHistoryJSONDecodingWithMeta() throws {
+        let jsonData = """
+        {
+            "meta": {
+                "fund_house": "SBI Mutual Fund",
+                "scheme_type": "Open Ended Schemes",
+                "scheme_category": "Debt Scheme - Overnight Fund",
+                "scheme_code": 101206,
+                "scheme_name": "SBI Overnight Fund - Regular Plan - Growth",
+                "isin_growth": "INF200K01LQ9",
+                "isin_div_reinvestment": null
+            },
+            "data": [
+                {
+                    "date": "27-01-2025",
+                    "nav": "1054.5678"
+                },
+                {
+                    "date": "26-01-2025",
+                    "nav": "1053.1234"
+                }
+            ],
+            "status": "SUCCESS"
+        }
+        """.data(using: .utf8)!
+        
+        let fundHistory = try JSONDecoder().decode(FundHistory.self, from: jsonData)
+        
+        XCTAssertEqual(fundHistory.meta.scheme_code, "101206")
+        XCTAssertEqual(fundHistory.meta.fund_house, "SBI Mutual Fund")
+        XCTAssertEqual(fundHistory.data.count, 2)
+        XCTAssertEqual(fundHistory.data[0].date, "27-01-2025")
+        XCTAssertEqual(fundHistory.data[0].nav, "1054.5678")
+        XCTAssertEqual(fundHistory.status, "SUCCESS")
+    }
+    
+    func testFundMetaJSONEncoding() throws {
+        let fundMeta = FundMeta(
+            fund_house: "Test Fund House",
+            scheme_type: "Open Ended Schemes",
+            scheme_category: "Equity Scheme - Large Cap Fund",
+            scheme_code: "123456",
+            scheme_name: "Test Fund - Regular Plan - Growth",
+            isin_growth: "INF123456789",
+            isin_div_reinvestment: nil
+        )
+        
+        let encoded = try JSONEncoder().encode(fundMeta)
+        let decoded = try JSONDecoder().decode(FundMeta.self, from: encoded)
+        
+        XCTAssertEqual(decoded.scheme_code, fundMeta.scheme_code)
+        XCTAssertEqual(decoded.fund_house, fundMeta.fund_house)
+        XCTAssertEqual(decoded.scheme_type, fundMeta.scheme_type)
+        XCTAssertEqual(decoded.scheme_category, fundMeta.scheme_category)
+        XCTAssertEqual(decoded.scheme_name, fundMeta.scheme_name)
+        XCTAssertEqual(decoded.isin_growth, fundMeta.isin_growth)
+        XCTAssertEqual(decoded.isin_div_reinvestment, fundMeta.isin_div_reinvestment)
+    }
+    
     // MARK: - Extension Tests
     
     func testDoubleFormattingExtensions() throws {
