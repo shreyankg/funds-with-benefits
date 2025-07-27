@@ -13,6 +13,87 @@ final class MutualFundsAppTests: XCTestCase {
 
     // MARK: - MutualFund Model Tests
     
+    func testMutualFundJSONDecodingWithIntegerSchemeCode() throws {
+        let jsonData = """
+        {
+            "schemeCode": 123456,
+            "schemeName": "SBI Large Cap Fund - Regular Plan - Growth",
+            "isinGrowth": "INF123456789",
+            "isinDivReinvestment": null
+        }
+        """.data(using: .utf8)!
+        
+        let fund = try JSONDecoder().decode(MutualFund.self, from: jsonData)
+        
+        XCTAssertEqual(fund.schemeCode, "123456")
+        XCTAssertEqual(fund.schemeName, "SBI Large Cap Fund - Regular Plan - Growth")
+        XCTAssertEqual(fund.isinGrowth, "INF123456789")
+        XCTAssertNil(fund.isinDivReinvestment)
+        XCTAssertEqual(fund.fundHouse, "SBI")
+    }
+    
+    func testMutualFundJSONDecodingWithStringSchemeCode() throws {
+        let jsonData = """
+        {
+            "schemeCode": "123456",
+            "schemeName": "SBI Large Cap Fund - Regular Plan - Growth",
+            "isinGrowth": "INF123456789",
+            "isinDivReinvestment": null
+        }
+        """.data(using: .utf8)!
+        
+        let fund = try JSONDecoder().decode(MutualFund.self, from: jsonData)
+        
+        XCTAssertEqual(fund.schemeCode, "123456")
+        XCTAssertEqual(fund.schemeName, "SBI Large Cap Fund - Regular Plan - Growth")
+        XCTAssertEqual(fund.isinGrowth, "INF123456789")
+        XCTAssertNil(fund.isinDivReinvestment)
+    }
+    
+    func testMutualFundJSONEncoding() throws {
+        let fund = MutualFund(
+            schemeCode: "123456",
+            schemeName: "SBI Large Cap Fund - Regular Plan - Growth",
+            isinGrowth: "INF123456789",
+            isinDivReinvestment: nil
+        )
+        
+        let encoded = try JSONEncoder().encode(fund)
+        let decoded = try JSONDecoder().decode(MutualFund.self, from: encoded)
+        
+        XCTAssertEqual(decoded.schemeCode, fund.schemeCode)
+        XCTAssertEqual(decoded.schemeName, fund.schemeName)
+        XCTAssertEqual(decoded.isinGrowth, fund.isinGrowth)
+        XCTAssertEqual(decoded.isinDivReinvestment, fund.isinDivReinvestment)
+    }
+    
+    func testMutualFundArrayJSONDecodingWithMixedSchemeCodeTypes() throws {
+        let jsonData = """
+        [
+            {
+                "schemeCode": 123456,
+                "schemeName": "SBI Large Cap Fund - Regular Plan - Growth",
+                "isinGrowth": "INF123456789",
+                "isinDivReinvestment": null
+            },
+            {
+                "schemeCode": "789012",
+                "schemeName": "HDFC Large Cap Fund - Regular Plan - Growth",
+                "isinGrowth": "INF789012345",
+                "isinDivReinvestment": null
+            }
+        ]
+        """.data(using: .utf8)!
+        
+        let funds = try JSONDecoder().decode([MutualFund].self, from: jsonData)
+        
+        XCTAssertEqual(funds.count, 2)
+        XCTAssertEqual(funds[0].schemeCode, "123456")
+        XCTAssertEqual(funds[1].schemeCode, "789012")
+        XCTAssertEqual(funds[0].fundHouse, "SBI")
+        XCTAssertEqual(funds[1].fundHouse, "HDFC")
+    }
+    
     func testMutualFundFundHouseExtraction() throws {
         let fund = MutualFund(
             schemeCode: "123456",

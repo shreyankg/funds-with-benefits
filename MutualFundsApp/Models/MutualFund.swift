@@ -11,6 +11,36 @@ struct MutualFund: Codable, Identifiable, Hashable {
         case schemeCode, schemeName, isinGrowth, isinDivReinvestment
     }
     
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Handle schemeCode as either Int or String
+        if let schemeCodeInt = try? container.decode(Int.self, forKey: .schemeCode) {
+            self.schemeCode = String(schemeCodeInt)
+        } else {
+            self.schemeCode = try container.decode(String.self, forKey: .schemeCode)
+        }
+        
+        self.schemeName = try container.decode(String.self, forKey: .schemeName)
+        self.isinGrowth = try container.decodeIfPresent(String.self, forKey: .isinGrowth)
+        self.isinDivReinvestment = try container.decodeIfPresent(String.self, forKey: .isinDivReinvestment)
+    }
+    
+    init(schemeCode: String, schemeName: String, isinGrowth: String? = nil, isinDivReinvestment: String? = nil) {
+        self.schemeCode = schemeCode
+        self.schemeName = schemeName
+        self.isinGrowth = isinGrowth
+        self.isinDivReinvestment = isinDivReinvestment
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(schemeCode, forKey: .schemeCode)
+        try container.encode(schemeName, forKey: .schemeName)
+        try container.encodeIfPresent(isinGrowth, forKey: .isinGrowth)
+        try container.encodeIfPresent(isinDivReinvestment, forKey: .isinDivReinvestment)
+    }
+    
     var fundHouse: String {
         let components = schemeName.components(separatedBy: " ")
         if let firstComponent = components.first {
