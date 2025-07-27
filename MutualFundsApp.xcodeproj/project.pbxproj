@@ -1,0 +1,637 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1A1111111111111111111111 /* MutualFundsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111111 /* MutualFundsApp.swift */; };
+		1A1111111111111111111112 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111112 /* ContentView.swift */; };
+		1A1111111111111111111113 /* MutualFund.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111113 /* MutualFund.swift */; };
+		1A1111111111111111111114 /* NAVData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111114 /* NAVData.swift */; };
+		1A1111111111111111111115 /* FundDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111115 /* FundDetails.swift */; };
+		1A1111111111111111111116 /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111116 /* APIService.swift */; };
+		1A1111111111111111111117 /* FundsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111117 /* FundsListView.swift */; };
+		1A1111111111111111111118 /* FundDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111118 /* FundDetailView.swift */; };
+		1A1111111111111111111119 /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111119 /* Date+Extensions.swift */; };
+		1A1111111111111111111120 /* Double+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111120 /* Double+Extensions.swift */; };
+		1A1111111111111111111121 /* DataCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111121 /* DataCache.swift */; };
+		1A1111111111111111111122 /* MutualFundsAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111122 /* MutualFundsAppTests.swift */; };
+		1A1111111111111111111123 /* MutualFundsAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111123 /* MutualFundsAppUITests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1B1111111111111111111111 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = GA1111111111111111111111 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CA1111111111111111111111;
+			remoteInfo = MutualFundsApp;
+		};
+		1B1111111111111111111122 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = GA1111111111111111111111 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CA1111111111111111111111;
+			remoteInfo = MutualFundsApp;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		2A1111111111111111111111 /* MutualFundsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MutualFundsApp.swift; sourceTree = "<group>"; };
+		2A1111111111111111111112 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		2A1111111111111111111113 /* MutualFund.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MutualFund.swift; sourceTree = "<group>"; };
+		2A1111111111111111111114 /* NAVData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NAVData.swift; sourceTree = "<group>"; };
+		2A1111111111111111111115 /* FundDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FundDetails.swift; sourceTree = "<group>"; };
+		2A1111111111111111111116 /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIService.swift; sourceTree = "<group>"; };
+		2A1111111111111111111117 /* FundsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FundsListView.swift; sourceTree = "<group>"; };
+		2A1111111111111111111118 /* FundDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FundDetailView.swift; sourceTree = "<group>"; };
+		2A1111111111111111111119 /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
+		2A1111111111111111111120 /* Double+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Double+Extensions.swift"; sourceTree = "<group>"; };
+		2A1111111111111111111121 /* DataCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCache.swift; sourceTree = "<group>"; };
+		2A1111111111111111111122 /* MutualFundsAppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MutualFundsAppTests.swift; sourceTree = "<group>"; };
+		2A1111111111111111111123 /* MutualFundsAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MutualFundsAppUITests.swift; sourceTree = "<group>"; };
+		3A1111111111111111111111 /* MutualFundsApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MutualFundsApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3A1111111111111111111122 /* MutualFundsAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MutualFundsAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3A1111111111111111111123 /* MutualFundsAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MutualFundsAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4A1111111111111111111111 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4A1111111111111111111122 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4A1111111111111111111123 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5A1111111111111111111111 = {
+			isa = PBXGroup;
+			children = (
+				6A1111111111111111111111 /* MutualFundsApp */,
+				6A1111111111111111111122 /* MutualFundsAppTests */,
+				6A1111111111111111111123 /* MutualFundsAppUITests */,
+				7A1111111111111111111111 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		6A1111111111111111111111 /* MutualFundsApp */ = {
+			isa = PBXGroup;
+			children = (
+				2A1111111111111111111111 /* MutualFundsApp.swift */,
+				2A1111111111111111111112 /* ContentView.swift */,
+				8A1111111111111111111111 /* Models */,
+				9A1111111111111111111111 /* Views */,
+				AA1111111111111111111111 /* Services */,
+				BA1111111111111111111111 /* Extensions */,
+			);
+			path = MutualFundsApp;
+			sourceTree = "<group>";
+		};
+		6A1111111111111111111122 /* MutualFundsAppTests */ = {
+			isa = PBXGroup;
+			children = (
+				2A1111111111111111111122 /* MutualFundsAppTests.swift */,
+			);
+			path = MutualFundsAppTests;
+			sourceTree = "<group>";
+		};
+		6A1111111111111111111123 /* MutualFundsAppUITests */ = {
+			isa = PBXGroup;
+			children = (
+				2A1111111111111111111123 /* MutualFundsAppUITests.swift */,
+			);
+			path = MutualFundsAppUITests;
+			sourceTree = "<group>";
+		};
+		7A1111111111111111111111 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3A1111111111111111111111 /* MutualFundsApp.app */,
+				3A1111111111111111111122 /* MutualFundsAppTests.xctest */,
+				3A1111111111111111111123 /* MutualFundsAppUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8A1111111111111111111111 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				2A1111111111111111111113 /* MutualFund.swift */,
+				2A1111111111111111111114 /* NAVData.swift */,
+				2A1111111111111111111115 /* FundDetails.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		9A1111111111111111111111 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2A1111111111111111111117 /* FundsListView.swift */,
+				2A1111111111111111111118 /* FundDetailView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		AA1111111111111111111111 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				2A1111111111111111111116 /* APIService.swift */,
+				2A1111111111111111111121 /* DataCache.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		BA1111111111111111111111 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				2A1111111111111111111119 /* Date+Extensions.swift */,
+				2A1111111111111111111120 /* Double+Extensions.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		CA1111111111111111111111 /* MutualFundsApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DA1111111111111111111111 /* Build configuration list for PBXNativeTarget "MutualFundsApp" */;
+			buildPhases = (
+				EA1111111111111111111111 /* Sources */,
+				4A1111111111111111111111 /* Frameworks */,
+				FA1111111111111111111111 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MutualFundsApp;
+			productName = MutualFundsApp;
+			productReference = 3A1111111111111111111111 /* MutualFundsApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		CA1111111111111111111122 /* MutualFundsAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DA1111111111111111111122 /* Build configuration list for PBXNativeTarget "MutualFundsAppTests" */;
+			buildPhases = (
+				EA1111111111111111111122 /* Sources */,
+				4A1111111111111111111122 /* Frameworks */,
+				FA1111111111111111111122 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1C1111111111111111111111 /* PBXTargetDependency */,
+			);
+			name = MutualFundsAppTests;
+			productName = MutualFundsAppTests;
+			productReference = 3A1111111111111111111122 /* MutualFundsAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		CA1111111111111111111123 /* MutualFundsAppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DA1111111111111111111123 /* Build configuration list for PBXNativeTarget "MutualFundsAppUITests" */;
+			buildPhases = (
+				EA1111111111111111111123 /* Sources */,
+				4A1111111111111111111123 /* Frameworks */,
+				FA1111111111111111111123 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1C1111111111111111111122 /* PBXTargetDependency */,
+			);
+			name = MutualFundsAppUITests;
+			productName = MutualFundsAppUITests;
+			productReference = 3A1111111111111111111123 /* MutualFundsAppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		GA1111111111111111111111 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1530;
+				LastUpgradeCheck = 1530;
+				TargetAttributes = {
+					CA1111111111111111111111 = {
+						CreatedOnToolsVersion = 15.3;
+					};
+					CA1111111111111111111122 = {
+						CreatedOnToolsVersion = 15.3;
+						TestTargetID = CA1111111111111111111111;
+					};
+					CA1111111111111111111123 = {
+						CreatedOnToolsVersion = 15.3;
+						TestTargetID = CA1111111111111111111111;
+					};
+				};
+			};
+			buildConfigurationList = HA1111111111111111111111 /* Build configuration list for PBXProject "MutualFundsApp" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 5A1111111111111111111111;
+			productRefGroup = 7A1111111111111111111111 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				CA1111111111111111111111 /* MutualFundsApp */,
+				CA1111111111111111111122 /* MutualFundsAppTests */,
+				CA1111111111111111111123 /* MutualFundsAppUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		FA1111111111111111111111 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FA1111111111111111111122 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FA1111111111111111111123 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		EA1111111111111111111111 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A1111111111111111111111 /* MutualFundsApp.swift in Sources */,
+				1A1111111111111111111112 /* ContentView.swift in Sources */,
+				1A1111111111111111111113 /* MutualFund.swift in Sources */,
+				1A1111111111111111111114 /* NAVData.swift in Sources */,
+				1A1111111111111111111115 /* FundDetails.swift in Sources */,
+				1A1111111111111111111116 /* APIService.swift in Sources */,
+				1A1111111111111111111117 /* FundsListView.swift in Sources */,
+				1A1111111111111111111118 /* FundDetailView.swift in Sources */,
+				1A1111111111111111111119 /* Date+Extensions.swift in Sources */,
+				1A1111111111111111111120 /* Double+Extensions.swift in Sources */,
+				1A1111111111111111111121 /* DataCache.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EA1111111111111111111122 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A1111111111111111111122 /* MutualFundsAppTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EA1111111111111111111123 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A1111111111111111111123 /* MutualFundsAppUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1C1111111111111111111111 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CA1111111111111111111111 /* MutualFundsApp */;
+			targetProxy = 1B1111111111111111111111 /* PBXContainerItemProxy */;
+		};
+		1C1111111111111111111122 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CA1111111111111111111111 /* MutualFundsApp */;
+			targetProxy = 1B1111111111111111111122 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		IA1111111111111111111111 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		JA1111111111111111111111 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		KA1111111111111111111111 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.MutualFundsApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		LA1111111111111111111111 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.MutualFundsApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		KA1111111111111111111122 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.MutualFundsAppTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MutualFundsApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MutualFundsApp";
+			};
+			name = Debug;
+		};
+		LA1111111111111111111122 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.MutualFundsAppTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MutualFundsApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MutualFundsApp";
+			};
+			name = Release;
+		};
+		KA1111111111111111111123 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.MutualFundsAppUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = MutualFundsApp;
+			};
+			name = Debug;
+		};
+		LA1111111111111111111123 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.MutualFundsAppUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = MutualFundsApp;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DA1111111111111111111111 /* Build configuration list for PBXNativeTarget "MutualFundsApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				KA1111111111111111111111 /* Debug */,
+				LA1111111111111111111111 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DA1111111111111111111122 /* Build configuration list for PBXNativeTarget "MutualFundsAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				KA1111111111111111111122 /* Debug */,
+				LA1111111111111111111122 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DA1111111111111111111123 /* Build configuration list for PBXNativeTarget "MutualFundsAppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				KA1111111111111111111123 /* Debug */,
+				LA1111111111111111111123 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		HA1111111111111111111111 /* Build configuration list for PBXProject "MutualFundsApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				IA1111111111111111111111 /* Debug */,
+				JA1111111111111111111111 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = GA1111111111111111111111 /* Project object */;
+}
