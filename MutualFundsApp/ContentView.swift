@@ -9,10 +9,10 @@ struct ContentView: View {
                     Text("Funds")
                 }
             
-            FavoritesView()
+            HoldingsView()
                 .tabItem {
-                    Image(systemName: "heart.fill")
-                    Text("Favorites")
+                    Image(systemName: "briefcase.fill")
+                    Text("Portfolio")
                 }
             
             AboutView()
@@ -24,33 +24,6 @@ struct ContentView: View {
     }
 }
 
-struct FavoritesView: View {
-    var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                Image(systemName: "heart.circle")
-                    .font(.system(size: 80))
-                    .foregroundColor(.gray)
-                
-                Text("Favorites Feature")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                
-                Text("This feature will allow you to save and track your favorite mutual funds for quick access.")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 40)
-                
-                Text("Coming Soon!")
-                    .font(.headline)
-                    .foregroundColor(.blue)
-                    .padding(.top)
-            }
-            .navigationTitle("Favorites")
-        }
-    }
-}
 
 struct AboutView: View {
     var body: some View {

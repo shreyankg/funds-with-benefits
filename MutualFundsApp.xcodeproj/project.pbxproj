@@ -23,6 +23,15 @@
 		1A1111111111111111111124 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111124 /* Assets.xcassets */; };
 		1A1111111111111111111125 /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111125 /* SplashScreenView.swift */; };
 		1A1111111111111111111126 /* app_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111126 /* app_logo.png */; };
+		1A1111111111111111111127 /* HoldingData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111127 /* HoldingData.swift */; };
+		1A1111111111111111111128 /* Portfolio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111128 /* Portfolio.swift */; };
+		1A1111111111111111111129 /* HoldingsParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111129 /* HoldingsParser.swift */; };
+		1A1111111111111111111130 /* FundMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111130 /* FundMatcher.swift */; };
+		1A1111111111111111111131 /* HoldingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111131 /* HoldingsManager.swift */; };
+		1A1111111111111111111132 /* HoldingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111132 /* HoldingsView.swift */; };
+		1A1111111111111111111133 /* PortfolioSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111133 /* PortfolioSummaryView.swift */; };
+		1A1111111111111111111134 /* HoldingRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111134 /* HoldingRowView.swift */; };
+		1A1111111111111111111135 /* FilePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111135 /* FilePickerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +68,15 @@
 		2A1111111111111111111124 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2A1111111111111111111125 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
 		2A1111111111111111111126 /* app_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = app_logo.png; sourceTree = "<group>"; };
+		2A1111111111111111111127 /* HoldingData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldingData.swift; sourceTree = "<group>"; };
+		2A1111111111111111111128 /* Portfolio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Portfolio.swift; sourceTree = "<group>"; };
+		2A1111111111111111111129 /* HoldingsParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldingsParser.swift; sourceTree = "<group>"; };
+		2A1111111111111111111130 /* FundMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FundMatcher.swift; sourceTree = "<group>"; };
+		2A1111111111111111111131 /* HoldingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldingsManager.swift; sourceTree = "<group>"; };
+		2A1111111111111111111132 /* HoldingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldingsView.swift; sourceTree = "<group>"; };
+		2A1111111111111111111133 /* PortfolioSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortfolioSummaryView.swift; sourceTree = "<group>"; };
+		2A1111111111111111111134 /* HoldingRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldingRowView.swift; sourceTree = "<group>"; };
+		2A1111111111111111111135 /* FilePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePickerView.swift; sourceTree = "<group>"; };
 		3A1111111111111111111111 /* MutualFundsApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MutualFundsApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3A1111111111111111111122 /* MutualFundsAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MutualFundsAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3A1111111111111111111123 /* MutualFundsAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MutualFundsAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -146,6 +164,8 @@
 				2A1111111111111111111113 /* MutualFund.swift */,
 				2A1111111111111111111114 /* NAVData.swift */,
 				2A1111111111111111111115 /* FundDetails.swift */,
+				2A1111111111111111111127 /* HoldingData.swift */,
+				2A1111111111111111111128 /* Portfolio.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -156,8 +176,20 @@
 				2A1111111111111111111125 /* SplashScreenView.swift */,
 				2A1111111111111111111117 /* FundsListView.swift */,
 				2A1111111111111111111118 /* FundDetailView.swift */,
+				CC1111111111111111111111 /* Holdings */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		CC1111111111111111111111 /* Holdings */ = {
+			isa = PBXGroup;
+			children = (
+				2A1111111111111111111132 /* HoldingsView.swift */,
+				2A1111111111111111111133 /* PortfolioSummaryView.swift */,
+				2A1111111111111111111134 /* HoldingRowView.swift */,
+				2A1111111111111111111135 /* FilePickerView.swift */,
+			);
+			path = Holdings;
 			sourceTree = "<group>";
 		};
 		AA1111111111111111111111 /* Services */ = {
@@ -165,6 +197,9 @@
 			children = (
 				2A1111111111111111111116 /* APIService.swift */,
 				2A1111111111111111111121 /* DataCache.swift */,
+				2A1111111111111111111129 /* HoldingsParser.swift */,
+				2A1111111111111111111130 /* FundMatcher.swift */,
+				2A1111111111111111111131 /* HoldingsManager.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -320,6 +355,15 @@
 				1A1111111111111111111120 /* Double+Extensions.swift in Sources */,
 				1A1111111111111111111121 /* DataCache.swift in Sources */,
 				1A1111111111111111111125 /* SplashScreenView.swift in Sources */,
+				1A1111111111111111111127 /* HoldingData.swift in Sources */,
+				1A1111111111111111111128 /* Portfolio.swift in Sources */,
+				1A1111111111111111111129 /* HoldingsParser.swift in Sources */,
+				1A1111111111111111111130 /* FundMatcher.swift in Sources */,
+				1A1111111111111111111131 /* HoldingsManager.swift in Sources */,
+				1A1111111111111111111132 /* HoldingsView.swift in Sources */,
+				1A1111111111111111111133 /* PortfolioSummaryView.swift in Sources */,
+				1A1111111111111111111134 /* HoldingRowView.swift in Sources */,
+				1A1111111111111111111135 /* FilePickerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

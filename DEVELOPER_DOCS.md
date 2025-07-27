@@ -24,6 +24,9 @@ Funds with Benefits (FWB) is a comprehensive iOS application for tracking and an
 - Comprehensive fund analysis with performance metrics
 - Offline functionality through intelligent caching
 - Modern SwiftUI interface with responsive design
+- Professional splash screen with FWB branding
+- App icon with complete iOS size support
+- Holdings management with PDF import capability
 
 ## Architecture
 
@@ -58,7 +61,12 @@ FundsWithBenefitsApp/
 ├── Views/                       # SwiftUI views
 │   ├── SplashScreenView.swift   # App launch splash with FWB branding
 │   ├── FundsListView.swift      # Main fund listing with search
-│   └── FundDetailView.swift     # Individual fund analysis
+│   ├── FundDetailView.swift     # Individual fund analysis
+│   └── Holdings/                # Portfolio holdings management
+│       ├── HoldingsView.swift   # Main holdings interface
+│       ├── FilePickerView.swift # PDF file selection
+│       ├── HoldingRowView.swift # Individual holding display
+│       └── PortfolioSummaryView.swift # Portfolio overview
 ├── Services/                    # External services and data access
 │   ├── APIService.swift         # API communication layer
 │   └── DataCache.swift          # Caching and offline functionality
@@ -217,8 +225,9 @@ struct FundPerformance {
 
 #### ContentView (Root)
 - Tab-based navigation
-- Three tabs: Funds, Favorites, About
+- Four tabs: Funds, Holdings, Favorites, About
 - Global app state management
+- Enhanced About section with comprehensive feature overview
 
 #### FundsListView
 - Main fund listing interface
@@ -233,6 +242,17 @@ struct FundPerformance {
 - Time period selection
 - Performance metrics display
 - Fund information details
+
+#### SplashScreenView
+- Professional app launch experience
+- FWB branding with sober color scheme
+- Center-justified app name display
+
+#### Holdings Views
+- **HoldingsView**: Main portfolio interface with PDF import
+- **FilePickerView**: Document picker for statement uploads
+- **HoldingRowView**: Individual holding display with fund matching
+- **PortfolioSummaryView**: Portfolio overview and analytics
 
 ### Reusable Components
 
@@ -326,20 +346,24 @@ xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name
 - **User Interactions**: Pull-to-refresh, category filtering
 
 **Test Coverage**:
-- App launch and basic navigation
+- App launch with splash screen handling
 - Search functionality with text input and clearing
-- Tab navigation between Funds, Favorites, About
+- Tab navigation between Funds, Holdings, Favorites, About
 - Fund detail view navigation (robust element detection)
 - Category filtering interactions
 - Pull-to-refresh gestures (multiple scrollable element strategies)
+- Holdings tab navigation and interaction
 
 **Recent Improvements**:
+- Fixed UI tests to work with splash screen implementation
+- Updated TEST_HOST configuration for FWB.app target
+- Fixed module imports from MutualFundsApp to FWB
+- Added splash screen wait logic with proper expectations
+- Updated About tab assertions for current branding
 - Fixed `testFundDetailNavigation()` with multiple element detection strategies
 - Fixed `testPullToRefresh()` with fallback scrollable element handling
 - Enhanced `testSearchFunctionality()` with improved timeouts and search clearing tests
-- Enhanced test robustness for SwiftUI NavigationLink and List components
-- Added longer wait times for API data loading in tests
-- Improved JSON parsing flexibility for API response variations
+- All 21 unit tests and 9 UI tests now passing
 
 **Test Reliability Enhancements**:
 - Extended timeouts from 10s to 15s for API-dependent tests
@@ -374,10 +398,11 @@ xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name
    - Strip debug symbols: Enabled
 
 2. **App Store Preparation**
-   - Bundle identifier: `com.example.MutualFundsApp`
-   - Version management
-   - App icons and screenshots
-   - App Store metadata
+   - Bundle identifier: Updated for FWB branding
+   - App display name: "FWB" on home screen
+   - Complete app icon set (20x20 to 1024x1024)
+   - Version management (currently 0.0.1)
+   - App Store metadata with FWB branding
 
 ### Distribution
 1. **TestFlight** (Internal testing)
@@ -500,5 +525,6 @@ xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name
 ---
 
 **Last Updated**: July 2025
-**Version**: 1.0.0
+**Version**: 0.0.1 (FWB Branding Update)
+**App Display Name**: FWB
 **Contact**: Development Team

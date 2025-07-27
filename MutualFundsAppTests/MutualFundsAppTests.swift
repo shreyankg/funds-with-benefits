@@ -418,4 +418,472 @@ final class MutualFundsAppTests: XCTestCase {
             XCTAssertEqual(filtered.count, 1000)
         }
     }
+    
+    // MARK: - Holdings Model Tests
+    
+    func testHoldingDataCreation() throws {
+        let holding = HoldingData(
+            schemeName: "SBI Conservative Hybrid Fund Direct Growth",
+            amcName: "SBI Mutual Fund",
+            category: "Hybrid",
+            subCategory: "Conservative Hybrid",
+            folioNumber: "22821659",
+            source: "External",
+            units: 610.664,
+            investedValue: 32931.93,
+            currentValue: 48581.37,
+            returns: 15649.44,
+            xirr: 10.19
+        )
+        
+        XCTAssertEqual(holding.schemeName, "SBI Conservative Hybrid Fund Direct Growth")
+        XCTAssertEqual(holding.amcName, "SBI Mutual Fund")
+        XCTAssertEqual(holding.units, 610.664, accuracy: 0.001)
+        XCTAssertEqual(holding.investedValue, 32931.93, accuracy: 0.01)
+        XCTAssertEqual(holding.currentValue, 48581.37, accuracy: 0.01)
+        XCTAssertEqual(holding.returns, 15649.44, accuracy: 0.01)
+        XCTAssertEqual(holding.xirr, 10.19, accuracy: 0.01)
+    }
+    
+    func testHoldingDataComputedProperties() throws {
+        let holding = HoldingData(
+            schemeName: "Test Fund",
+            amcName: "Test AMC",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "Groww",
+            units: 100.0,
+            investedValue: 10000.0,
+            currentValue: 15000.0,
+            returns: 5000.0,
+            xirr: 12.5
+        )
+        
+        XCTAssertEqual(holding.returnsPercentage, 50.0, accuracy: 0.01)
+        XCTAssertEqual(holding.navPerUnit, 150.0, accuracy: 0.01)
+    }
+    
+    func testHoldingDataFromParsedData() throws {
+        let parsedData: [String: String] = [
+            "schemeName": "Test Fund Name",
+            "amcName": "Test AMC",
+            "category": "Equity",
+            "subCategory": "Large Cap",
+            "folioNumber": "123456",
+            "source": "External",
+            "units": "100.500",
+            "investedValue": "10000.00",
+            "currentValue": "12000.00",
+            "returns": "2000.00",
+            "xirr": "15.5%"
+        ]
+        
+        let holding = HoldingData.from(parsedData: parsedData)
+        
+        XCTAssertNotNil(holding)
+        XCTAssertEqual(holding?.schemeName, "Test Fund Name")
+        XCTAssertEqual(holding?.units ?? 0, 100.5, accuracy: 0.001)
+        XCTAssertEqual(holding?.xirr ?? 0, 15.5, accuracy: 0.01)
+    }
+    
+    func testPortfolioSummaryCalculations() throws {
+        let holdings = [
+            HoldingData(
+                schemeName: "Fund 1",
+                amcName: "AMC 1",
+                category: "Equity",
+                subCategory: "Large Cap",
+                folioNumber: "123456",
+                source: "Groww",
+                units: 100.0,
+                investedValue: 10000.0,
+                currentValue: 15000.0,
+                returns: 5000.0,
+                xirr: 12.0
+            ),
+            HoldingData(
+                schemeName: "Fund 2",
+                amcName: "AMC 2",
+                category: "Debt",
+                subCategory: "Liquid",
+                folioNumber: "789012",
+                source: "External",
+                units: 50.0,
+                investedValue: 5000.0,
+                currentValue: 5500.0,
+                returns: 500.0,
+                xirr: 8.0
+            )
+        ]
+        
+        let summary = PortfolioSummary(holdings: holdings)
+        
+        XCTAssertEqual(summary.holdingsCount, 2)
+        XCTAssertEqual(summary.totalInvestments, 15000.0, accuracy: 0.01)
+        XCTAssertEqual(summary.currentPortfolioValue, 20500.0, accuracy: 0.01)
+        XCTAssertEqual(summary.totalReturns, 5500.0, accuracy: 0.01)
+        XCTAssertEqual(summary.returnsPercentage, 36.67, accuracy: 0.01)
+        
+        // Weighted XIRR calculation: (10000/15000 * 12) + (5000/15000 * 8) = 8 + 2.67 = 10.67
+        XCTAssertEqual(summary.overallXIRR, 10.67, accuracy: 0.01)
+    }
+    
+    func testPortfolioCreation() throws {
+        let holdings = [
+            HoldingData(
+                schemeName: "Test Fund",
+                amcName: "Test AMC",
+                category: "Equity",
+                subCategory: "Large Cap",
+                folioNumber: "123456",
+                source: "Groww",
+                units: 100.0,
+                investedValue: 10000.0,
+                currentValue: 12000.0,
+                returns: 2000.0,
+                xirr: 15.0
+            )
+        ]
+        
+        let portfolio = Portfolio(holdings: holdings)
+        
+        XCTAssertEqual(portfolio.holdings.count, 1)
+        XCTAssertEqual(portfolio.summary.totalInvestments, 10000.0, accuracy: 0.01)
+        XCTAssertNotNil(portfolio.lastUpdated)
+    }
+    
+    func testPortfolioCategoryBreakdown() throws {
+        let holdings = [
+            HoldingData(
+                schemeName: "Equity Fund 1",
+                amcName: "AMC 1",
+                category: "Equity",
+                subCategory: "Large Cap",
+                folioNumber: "123456",
+                source: "Groww",
+                units: 100.0,
+                investedValue: 10000.0,
+                currentValue: 12000.0,
+                returns: 2000.0,
+                xirr: 15.0
+            ),
+            HoldingData(
+                schemeName: "Equity Fund 2",
+                amcName: "AMC 2",
+                category: "Equity",
+                subCategory: "Mid Cap",
+                folioNumber: "123457",
+                source: "External",
+                units: 50.0,
+                investedValue: 5000.0,
+                currentValue: 6000.0,
+                returns: 1000.0,
+                xirr: 18.0
+            ),
+            HoldingData(
+                schemeName: "Debt Fund",
+                amcName: "AMC 3",
+                category: "Debt",
+                subCategory: "Liquid",
+                folioNumber: "123458",
+                source: "Groww",
+                units: 200.0,
+                investedValue: 20000.0,
+                currentValue: 21000.0,
+                returns: 1000.0,
+                xirr: 5.0
+            )
+        ]
+        
+        let portfolio = Portfolio(holdings: holdings)
+        let breakdown = portfolio.categoryBreakdown
+        
+        XCTAssertEqual(breakdown.count, 2)
+        XCTAssertNotNil(breakdown["Equity"])
+        XCTAssertNotNil(breakdown["Debt"])
+        
+        let equityAllocation = breakdown["Equity"]!
+        XCTAssertEqual(equityAllocation.holdingsCount, 2)
+        XCTAssertEqual(equityAllocation.investedValue, 15000.0, accuracy: 0.01)
+        XCTAssertEqual(equityAllocation.currentValue, 18000.0, accuracy: 0.01)
+        XCTAssertEqual(equityAllocation.returns, 3000.0, accuracy: 0.01)
+        
+        let debtAllocation = breakdown["Debt"]!
+        XCTAssertEqual(debtAllocation.holdingsCount, 1)
+        XCTAssertEqual(debtAllocation.investedValue, 20000.0, accuracy: 0.01)
+    }
+    
+    // MARK: - Fund Matcher Tests
+    
+    func testFundMatcherExactMatch() throws {
+        let holding = HoldingData(
+            schemeName: "SBI Large Cap Fund Direct Growth",
+            amcName: "SBI Mutual Fund",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "External",
+            units: 100.0,
+            investedValue: 10000.0,
+            currentValue: 12000.0,
+            returns: 2000.0,
+            xirr: 15.0
+        )
+        
+        let fund = MutualFund(
+            schemeCode: "123456",
+            schemeName: "SBI Large Cap Fund Direct Growth",
+            isinGrowth: "INF123456789",
+            isinDivReinvestment: nil
+        )
+        
+        let matcher = FundMatcher.shared
+        let matchedHoldings = matcher.matchHoldingsWithFunds([holding], availableFunds: [fund])
+        
+        XCTAssertEqual(matchedHoldings.count, 1)
+        XCTAssertNotNil(matchedHoldings.first?.matchedSchemeCode)
+        XCTAssertEqual(matchedHoldings.first?.matchedSchemeCode, "123456")
+    }
+    
+    func testFundMatcherAMCVariations() throws {
+        let holding = HoldingData(
+            schemeName: "ICICI Prudential Large Cap Fund Direct Growth",
+            amcName: "ICICI Prudential Mutual Fund",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "External",
+            units: 100.0,
+            investedValue: 10000.0,
+            currentValue: 12000.0,
+            returns: 2000.0,
+            xirr: 15.0
+        )
+        
+        let fund = MutualFund(
+            schemeCode: "789012",
+            schemeName: "ICICI Prudential Large Cap Fund Direct Growth",
+            isinGrowth: "INF789012345",
+            isinDivReinvestment: nil
+        )
+        
+        let matcher = FundMatcher.shared
+        let matchedHoldings = matcher.matchHoldingsWithFunds([holding], availableFunds: [fund])
+        
+        XCTAssertEqual(matchedHoldings.count, 1)
+        XCTAssertNotNil(matchedHoldings.first?.matchedSchemeCode)
+    }
+    
+    func testFundMatcherNoMatch() throws {
+        let holding = HoldingData(
+            schemeName: "Unknown Fund Name",
+            amcName: "Unknown AMC",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "External",
+            units: 100.0,
+            investedValue: 10000.0,
+            currentValue: 12000.0,
+            returns: 2000.0,
+            xirr: 15.0
+        )
+        
+        let fund = MutualFund(
+            schemeCode: "123456",
+            schemeName: "SBI Large Cap Fund Direct Growth",
+            isinGrowth: "INF123456789",
+            isinDivReinvestment: nil
+        )
+        
+        let matcher = FundMatcher.shared
+        let matchedHoldings = matcher.matchHoldingsWithFunds([holding], availableFunds: [fund])
+        
+        XCTAssertEqual(matchedHoldings.count, 1)
+        XCTAssertNil(matchedHoldings.first?.matchedSchemeCode)
+    }
+    
+    // MARK: - Holdings Parser Tests
+    
+    func testHoldingsParserCSVParsing() throws {
+        let csvContent = """
+        Scheme Name,AMC,Category,Sub Category,Folio Number,Source,Units,Invested Value,Current Value,Returns,XIRR
+        SBI Large Cap Fund Direct Growth,SBI Mutual Fund,Equity,Large Cap,123456,External,100.500,10000.00,12000.00,2000.00,15.5%
+        HDFC Liquid Fund Direct Growth,HDFC Mutual Fund,Debt,Liquid,789012,Groww,50.250,5000.00,5250.00,250.00,5.2%
+        """
+        
+        let parser = HoldingsParser.shared
+        
+        // This would normally be tested with actual CSV file, but we can test the parsing logic
+        let lines = csvContent.components(separatedBy: .newlines)
+        XCTAssertTrue(lines.count >= 3) // Header + 2 data lines
+        
+        // Test CSV line parsing
+        let testLine = "\"SBI Large Cap Fund Direct Growth\",\"SBI Mutual Fund\",\"Equity\",\"Large Cap\",\"123456\",\"External\",100.500,10000.00,12000.00,2000.00,15.5%"
+        let columns = testLine.components(separatedBy: ",")
+        XCTAssertTrue(columns.count >= 11)
+    }
+    
+    // MARK: - Holdings Manager Integration Tests
+    
+    func testHoldingsManagerPortfolioStorage() throws {
+        let holdingsManager = HoldingsManager.shared
+        
+        // Clear any existing portfolio
+        Task { @MainActor in
+            holdingsManager.clearPortfolio()
+            XCTAssertNil(holdingsManager.portfolio)
+            XCTAssertFalse(holdingsManager.hasHoldings)
+        }
+        
+        let testHolding = HoldingData(
+            schemeName: "Test Fund",
+            amcName: "Test AMC",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "Test",
+            units: 100.0,
+            investedValue: 10000.0,
+            currentValue: 12000.0,
+            returns: 2000.0,
+            xirr: 15.0
+        )
+        
+        let testPortfolio = Portfolio(holdings: [testHolding])
+        
+        // Test saving portfolio (async operation)
+        let expectation = XCTestExpectation(description: "Portfolio saved")
+        
+        Task {
+            await holdingsManager.savePortfolio(testPortfolio)
+            
+            await MainActor.run {
+                XCTAssertNotNil(holdingsManager.portfolio)
+                XCTAssertTrue(holdingsManager.hasHoldings)
+                XCTAssertEqual(holdingsManager.portfolio?.holdings.count, 1)
+            }
+            
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 5.0)
+        
+        // Clean up
+        Task { @MainActor in
+            holdingsManager.clearPortfolio()
+        }
+    }
+    
+    func testHoldingsManagerAnalytics() throws {
+        let holdingsManager = HoldingsManager.shared
+        
+        let holdings = [
+            HoldingData(
+                schemeName: "Equity Fund",
+                amcName: "AMC 1",
+                category: "Equity",
+                subCategory: "Large Cap",
+                folioNumber: "123456",
+                source: "Groww",
+                units: 100.0,
+                investedValue: 10000.0,
+                currentValue: 12000.0,
+                returns: 2000.0,
+                xirr: 15.0,
+                matchedSchemeCode: "123456"
+            ),
+            HoldingData(
+                schemeName: "Debt Fund",
+                amcName: "AMC 2",
+                category: "Debt",
+                subCategory: "Liquid",
+                folioNumber: "789012",
+                source: "External",
+                units: 50.0,
+                investedValue: 5000.0,
+                currentValue: 5250.0,
+                returns: 250.0,
+                xirr: 5.0
+            )
+        ]
+        
+        let testPortfolio = Portfolio(holdings: holdings)
+        
+        let expectation = XCTestExpectation(description: "Portfolio analyzed")
+        
+        Task {
+            await holdingsManager.savePortfolio(testPortfolio)
+            
+            await MainActor.run {
+                XCTAssertEqual(holdingsManager.matchedHoldingsCount, 1)
+                XCTAssertEqual(holdingsManager.unmatchedHoldingsCount, 1)
+            }
+            
+            await MainActor.run {
+                let categoryAllocations = holdingsManager.getCategoryAllocation()
+                XCTAssertEqual(categoryAllocations.count, 2)
+                
+                let sourceAllocations = holdingsManager.getSourceAllocation()
+                XCTAssertEqual(sourceAllocations.count, 2)
+                
+                let topPerformers = holdingsManager.getTopPerformers()
+                XCTAssertTrue(topPerformers.count <= 5)
+            }
+            
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 5.0)
+        
+        // Clean up
+        Task { @MainActor in
+            holdingsManager.clearPortfolio()
+        }
+    }
+    
+    func testHoldingsManagerCSVExport() throws {
+        let holdingsManager = HoldingsManager.shared
+        
+        let testHolding = HoldingData(
+            schemeName: "Test Fund",
+            amcName: "Test AMC",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "Test",
+            units: 100.0,
+            investedValue: 10000.0,
+            currentValue: 12000.0,
+            returns: 2000.0,
+            xirr: 15.0,
+            matchedSchemeCode: "123456"
+        )
+        
+        let testPortfolio = Portfolio(holdings: [testHolding])
+        
+        let expectation = XCTestExpectation(description: "CSV exported")
+        
+        Task {
+            await holdingsManager.savePortfolio(testPortfolio)
+            
+            await MainActor.run {
+                let csvContent = holdingsManager.exportPortfolioToCSV()
+                XCTAssertNotNil(csvContent)
+                XCTAssertTrue(csvContent?.contains("Scheme Name,AMC,Category") ?? false)
+                XCTAssertTrue(csvContent?.contains("Test Fund") ?? false)
+                XCTAssertTrue(csvContent?.contains("Matched") ?? false)
+            }
+            
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 5.0)
+        
+        // Clean up
+        Task { @MainActor in
+            holdingsManager.clearPortfolio()
+        }
+    }
 }

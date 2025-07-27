@@ -27,6 +27,11 @@ A comprehensive iOS app for tracking and analyzing Indian mutual funds using rea
 - Category filters for focused browsing
 - Responsive and intuitive user interface
 
+### 📊 **Portfolio Holdings Management**
+- Import holdings from PDF statements
+- Fund matching and portfolio tracking
+- Holdings overview and portfolio summary
+
 ## Technical Stack
 
 - **Platform**: iOS 17.0+
@@ -39,19 +44,29 @@ A comprehensive iOS app for tracking and analyzing Indian mutual funds using rea
 
 ```
 FundsWithBenefitsApp/
-├── MutualFundsApp.swift          # App entry point (renamed to FundsWithBenefitsApp)
+├── MutualFundsApp.swift          # App entry point (FundsWithBenefitsApp)
 ├── ContentView.swift             # Main tab view
 ├── Models/
 │   ├── MutualFund.swift         # Core fund model
 │   ├── NAVData.swift            # Historical NAV data
-│   └── FundDetails.swift        # Combined detail model
+│   ├── FundDetails.swift        # Combined detail model
+│   ├── HoldingData.swift        # Holdings data model
+│   └── Portfolio.swift          # Portfolio management
 ├── Views/
-│   ├── SplashScreenView.swift   # App launch splash screen with FWB branding
+│   ├── SplashScreenView.swift   # App launch splash with FWB branding
 │   ├── FundsListView.swift      # Main list with search
-│   └── FundDetailView.swift     # Individual fund details
+│   ├── FundDetailView.swift     # Individual fund details
+│   └── Holdings/                # Portfolio holdings views
+│       ├── HoldingsView.swift   # Main holdings interface
+│       ├── FilePickerView.swift # PDF file picker
+│       ├── HoldingRowView.swift # Individual holding display
+│       └── PortfolioSummaryView.swift # Portfolio overview
 ├── Services/
 │   ├── APIService.swift         # API interactions
-│   └── DataCache.swift          # Caching and offline functionality
+│   ├── DataCache.swift          # Caching and offline functionality
+│   ├── HoldingsParser.swift     # PDF statement parsing
+│   ├── HoldingsManager.swift    # Holdings data management
+│   └── FundMatcher.swift        # Fund matching service
 └── Extensions/
     ├── Date+Extensions.swift    # Date utilities
     └── Double+Extensions.swift  # Number formatting
@@ -104,7 +119,7 @@ The app calculates several key financial metrics:
 ## Future Enhancements
 
 - Favorites functionality for quick fund access
-- Portfolio tracking and performance comparison
+- Enhanced portfolio analytics and performance comparison
 - Push notifications for significant fund movements
 - Advanced filtering options (AUM, expense ratio)
 - Fund comparison tools
