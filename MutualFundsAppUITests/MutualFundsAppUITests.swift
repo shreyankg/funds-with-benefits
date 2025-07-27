@@ -67,29 +67,47 @@ final class MutualFundsAppUITests: XCTestCase {
         // Wait additional time for API data to load completely
         Thread.sleep(forTimeInterval: 8)
         
+        // Ensure search field is visible and hittable before interacting
+        XCTAssertTrue(searchField.exists, "Search field should exist")
+        XCTAssertTrue(searchField.isHittable, "Search field should be hittable")
+        
         // Tap on search field and enter text
         searchField.tap()
+        
+        // Small delay to ensure tap registered
+        Thread.sleep(forTimeInterval: 0.5)
+        
+        // Clear any existing text first (if any)
+        if let currentValue = searchField.value as? String, !currentValue.isEmpty {
+            // If there's existing text, clear it
+            let deleteString = String(repeating: XCUIKeyboardKey.delete.rawValue, count: currentValue.count)
+            searchField.typeText(deleteString)
+        }
+        
         searchField.typeText("SBI")
         
         // Wait a moment for search results to update
         Thread.sleep(forTimeInterval: 2)
         
         // Verify search text was entered correctly
-        XCTAssertTrue(searchField.value as? String == "SBI")
+        let enteredValue = searchField.value as? String ?? ""
+        XCTAssertTrue(enteredValue == "SBI", "Search field should contain 'SBI', but contains '\(enteredValue)'")
         
-        // Clear the search to test that functionality too
+        // Clear the search using a more reliable method
         searchField.tap()
-        // Select all text and delete
-        searchField.typeText(XCUIKeyboardKey.command.rawValue + "a")
-        searchField.typeText(XCUIKeyboardKey.delete.rawValue)
+        Thread.sleep(forTimeInterval: 0.5)
+        
+        // Use backspace to clear the text (more reliable than cmd+a)
+        let deleteString = String(repeating: XCUIKeyboardKey.delete.rawValue, count: 3) // "SBI" = 3 characters
+        searchField.typeText(deleteString)
         
         // Wait for clear to take effect
         Thread.sleep(forTimeInterval: 1)
         
         // Verify search was cleared (empty string or placeholder text)
-        let searchValue = searchField.value as? String ?? ""
-        XCTAssertTrue(searchValue.isEmpty || searchValue.contains("Search"), 
-                     "Search field should be empty or show placeholder after clearing")
+        let clearedValue = searchField.value as? String ?? ""
+        XCTAssertTrue(clearedValue.isEmpty || clearedValue.contains("Search"), 
+                     "Search field should be empty or show placeholder after clearing, but contains '\(clearedValue)'")
     }
     
     func testTabNavigation() throws {
