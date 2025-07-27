@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-The Mutual Funds App is a SwiftUI iOS application for tracking and analyzing Indian mutual funds. The app provides real-time data from the MF API (api.mfapi.in), interactive performance charts, comprehensive search functionality, and detailed fund analysis tools.
+Funds with Benefits (FWB) is a SwiftUI iOS application for tracking and analyzing Indian mutual funds. The app provides real-time data from the MF API (api.mfapi.in), interactive performance charts, comprehensive search functionality, and detailed fund analysis tools. FWB empowers investors with intelligent insights and benefits for better investment decisions.
 
 ## Build and Development Commands
 
@@ -36,14 +36,15 @@ The Mutual Funds App is a SwiftUI iOS application for tracking and analyzing Ind
 
 ### Project Structure
 ```
-MutualFundsApp/
-├── MutualFundsApp.swift          # App entry point
+FundsWithBenefitsApp/
+├── MutualFundsApp.swift          # App entry point (FundsWithBenefitsApp struct)
 ├── ContentView.swift             # Main tab navigation
 ├── Models/                       # Data models and business logic
 │   ├── MutualFund.swift         # Core fund model with computed properties
 │   ├── NAVData.swift            # Historical NAV data with date parsing
 │   └── FundDetails.swift        # Fund analysis and performance calculations
 ├── Views/                       # SwiftUI view components
+│   ├── SplashScreenView.swift   # App launch splash with FWB branding
 │   ├── FundsListView.swift      # Main listing with search and filters
 │   └── FundDetailView.swift     # Individual fund analysis and charts
 ├── Services/                    # External services and data management

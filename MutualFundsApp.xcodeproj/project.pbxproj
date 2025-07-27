@@ -20,6 +20,7 @@
 		1A1111111111111111111121 /* DataCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111121 /* DataCache.swift */; };
 		1A1111111111111111111122 /* MutualFundsAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111122 /* MutualFundsAppTests.swift */; };
 		1A1111111111111111111123 /* MutualFundsAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111123 /* MutualFundsAppUITests.swift */; };
+		1A1111111111111111111124 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A1111111111111111111124 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +54,7 @@
 		2A1111111111111111111121 /* DataCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCache.swift; sourceTree = "<group>"; };
 		2A1111111111111111111122 /* MutualFundsAppTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MutualFundsAppTests.swift; sourceTree = "<group>"; };
 		2A1111111111111111111123 /* MutualFundsAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MutualFundsAppUITests.swift; sourceTree = "<group>"; };
+		2A1111111111111111111124 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3A1111111111111111111111 /* MutualFundsApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MutualFundsApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3A1111111111111111111122 /* MutualFundsAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MutualFundsAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3A1111111111111111111123 /* MutualFundsAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MutualFundsAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -102,6 +104,7 @@
 				9A1111111111111111111111 /* Views */,
 				AA1111111111111111111111 /* Services */,
 				BA1111111111111111111111 /* Extensions */,
+				2A1111111111111111111124 /* Assets.xcassets */,
 			);
 			path = MutualFundsApp;
 			sourceTree = "<group>";
@@ -273,6 +276,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A1111111111111111111124 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

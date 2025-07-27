@@ -1,6 +1,6 @@
-# Mutual Funds Tracker
+# Funds with Benefits (FWB)
 
-A comprehensive iOS app for tracking and analyzing Indian mutual funds using real-time data from the MF API.
+A comprehensive iOS app for tracking and analyzing Indian mutual funds using real-time data from the MF API. Empowering your investment journey with intelligent insights and benefits.
 
 ## Features
 
@@ -38,18 +38,20 @@ A comprehensive iOS app for tracking and analyzing Indian mutual funds using rea
 ## Project Structure
 
 ```
-MutualFundsApp/
-├── MutualFundsApp.swift          # App entry point
+FundsWithBenefitsApp/
+├── MutualFundsApp.swift          # App entry point (renamed to FundsWithBenefitsApp)
 ├── ContentView.swift             # Main tab view
 ├── Models/
 │   ├── MutualFund.swift         # Core fund model
 │   ├── NAVData.swift            # Historical NAV data
 │   └── FundDetails.swift        # Combined detail model
 ├── Views/
+│   ├── SplashScreenView.swift   # App launch splash screen with FWB branding
 │   ├── FundsListView.swift      # Main list with search
 │   └── FundDetailView.swift     # Individual fund details
 ├── Services/
-│   └── APIService.swift         # API interactions
+│   ├── APIService.swift         # API interactions
+│   └── DataCache.swift          # Caching and offline functionality
 └── Extensions/
     ├── Date+Extensions.swift    # Date utilities
     └── Double+Extensions.swift  # Number formatting
@@ -121,4 +123,8 @@ This project is created for educational and personal use. The mutual fund data i
 
 ---
 
-**Built with ❤️ for Indian investors seeking better mutual fund analysis tools.**
+## About Funds with Benefits (FWB)
+
+FWB represents a new approach to mutual fund investing - combining powerful analysis tools with user-friendly design to make investment decisions easier and more informed. Our mission is to democratize access to professional-grade investment insights.
+
+**Built with ❤️ for Indian investors seeking better mutual fund analysis tools with real benefits.**
