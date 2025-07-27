@@ -20,6 +20,12 @@ final class MutualFundsAppUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
+        // Wait for splash screen to complete (3 seconds + buffer)
+        let tabBar = app.tabBars.firstMatch
+        let exists = NSPredicate(format: "exists == true")
+        expectation(for: exists, evaluatedWith: tabBar, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
+
         // Verify the app launches and shows the tab bar
         XCTAssertTrue(app.tabBars.firstMatch.exists)
         
@@ -36,6 +42,12 @@ final class MutualFundsAppUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
         
+        // Wait for splash screen to complete
+        let tabBar = app.tabBars.firstMatch
+        let exists = NSPredicate(format: "exists == true")
+        expectation(for: exists, evaluatedWith: tabBar, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
+        
         // Ensure we're on the Funds tab
         app.tabBars.buttons["Funds"].tap()
         
@@ -44,8 +56,8 @@ final class MutualFundsAppUITests: XCTestCase {
         
         // Check for search functionality (may take time to load)
         let searchField = app.textFields.firstMatch
-        let exists = NSPredicate(format: "exists == true")
-        expectation(for: exists, evaluatedWith: searchField, handler: nil)
+        let fieldExists = NSPredicate(format: "exists == true")
+        expectation(for: fieldExists, evaluatedWith: searchField, handler: nil)
         waitForExpectations(timeout: 10, handler: nil)
         
         XCTAssertTrue(searchField.exists)
@@ -55,13 +67,19 @@ final class MutualFundsAppUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
         
+        // Wait for splash screen to complete
+        let tabBar = app.tabBars.firstMatch
+        let exists = NSPredicate(format: "exists == true")
+        expectation(for: exists, evaluatedWith: tabBar, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
+        
         // Navigate to Funds tab
         app.tabBars.buttons["Funds"].tap()
         
         // Wait for search field to appear with longer timeout
         let searchField = app.textFields.firstMatch
-        let exists = NSPredicate(format: "exists == true")
-        expectation(for: exists, evaluatedWith: searchField, handler: nil)
+        let searchExists = NSPredicate(format: "exists == true")
+        expectation(for: searchExists, evaluatedWith: searchField, handler: nil)
         waitForExpectations(timeout: 15, handler: nil)
         
         // Wait additional time for API data to load completely
@@ -114,6 +132,12 @@ final class MutualFundsAppUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
         
+        // Wait for splash screen to complete
+        let tabBar = app.tabBars.firstMatch
+        let tabNavExists = NSPredicate(format: "exists == true")
+        expectation(for: tabNavExists, evaluatedWith: tabBar, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
+        
         // Test navigation to Favorites tab
         app.tabBars.buttons["Favorites"].tap()
         XCTAssertTrue(app.tabBars.buttons["Favorites"].isSelected)
@@ -133,12 +157,18 @@ final class MutualFundsAppUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
         
+        // Wait for splash screen to complete
+        let tabBar = app.tabBars.firstMatch
+        let aboutTabExists = NSPredicate(format: "exists == true")
+        expectation(for: aboutTabExists, evaluatedWith: tabBar, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
+        
         // Navigate to About tab
         app.tabBars.buttons["About"].tap()
         
         // Check for key elements in About tab
-        XCTAssertTrue(app.staticTexts["Mutual Funds Tracker"].exists)
-        XCTAssertTrue(app.staticTexts["Track and analyze Indian mutual funds with real-time data"].exists)
+        XCTAssertTrue(app.staticTexts["Funds with Benefits"].exists)
+        XCTAssertTrue(app.staticTexts["Empowering your investment journey with intelligent insights and benefits"].exists)
         XCTAssertTrue(app.staticTexts["api.mfapi.in"].exists)
     }
     
@@ -146,13 +176,19 @@ final class MutualFundsAppUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
         
+        // Wait for splash screen to complete
+        let tabBar = app.tabBars.firstMatch
+        let fundDetailTabExists = NSPredicate(format: "exists == true")
+        expectation(for: fundDetailTabExists, evaluatedWith: tabBar, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
+        
         // Navigate to Funds tab
         app.tabBars.buttons["Funds"].tap()
         
         // Wait for the content to load - look for the search field first as it indicates the view is ready
         let searchField = app.textFields.firstMatch
-        let exists = NSPredicate(format: "exists == true")
-        expectation(for: exists, evaluatedWith: searchField, handler: nil)
+        let searchExists = NSPredicate(format: "exists == true")
+        expectation(for: searchExists, evaluatedWith: searchField, handler: nil)
         waitForExpectations(timeout: 15, handler: nil)
         
         // Wait additional time for API data to load
@@ -231,13 +267,19 @@ final class MutualFundsAppUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
         
+        // Wait for splash screen to complete
+        let tabBar = app.tabBars.firstMatch
+        let categoryTabExists = NSPredicate(format: "exists == true")
+        expectation(for: categoryTabExists, evaluatedWith: tabBar, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
+        
         // Navigate to Funds tab
         app.tabBars.buttons["Funds"].tap()
         
         // Wait for category filter buttons to appear
         let allButton = app.buttons["All"]
-        let exists = NSPredicate(format: "exists == true")
-        expectation(for: exists, evaluatedWith: allButton, handler: nil)
+        let buttonExists = NSPredicate(format: "exists == true")
+        expectation(for: buttonExists, evaluatedWith: allButton, handler: nil)
         waitForExpectations(timeout: 10, handler: nil)
         
         // Test category filter buttons
@@ -260,6 +302,12 @@ final class MutualFundsAppUITests: XCTestCase {
     func testPullToRefresh() throws {
         let app = XCUIApplication()
         app.launch()
+        
+        // Wait for splash screen to complete
+        let tabBar = app.tabBars.firstMatch
+        let pullRefreshTabExists = NSPredicate(format: "exists == true")
+        expectation(for: pullRefreshTabExists, evaluatedWith: tabBar, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
         
         // Navigate to Funds tab
         app.tabBars.buttons["Funds"].tap()

@@ -1,5 +1,5 @@
 import XCTest
-@testable import MutualFundsApp
+@testable import FWB
 
 final class MutualFundsAppTests: XCTestCase {
 
