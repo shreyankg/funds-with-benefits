@@ -7,6 +7,7 @@ class HoldingsManager: ObservableObject {
     
     @Published var portfolio: Portfolio?
     @Published var isLoading = false
+    @Published var loadingState: LoadingState = .idle
     @Published var errorMessage: String?
     
     private let userDefaults = UserDefaults.standard
@@ -22,27 +23,43 @@ class HoldingsManager: ObservableObject {
     // MARK: - Portfolio Management
     
     func uploadHoldingsFile(from url: URL) async {
-        isLoading = true
-        errorMessage = nil
+        // Update UI state on main thread
+        await MainActor.run {
+            isLoading = true
+            loadingState = .uploadingFile
+            errorMessage = nil
+        }
         
         do {
-            // 1. Parse holdings from file
-            let parsedHoldings = try await holdingsParser.parseHoldingsFile(from: url)
+            // Perform heavy operations in background
+            let result = try await Task.detached(priority: .userInitiated) {
+                // 1. Parse holdings from file (background task)
+                let parsedHoldings = try await self.holdingsParser.parseHoldingsFile(from: url)
+                
+                // 2. Get current funds list for matching (background task)
+                let availableFunds = try await self.apiService.fetchAllFunds()
+                
+                // 3. Match holdings with available funds (background task)
+                let matchedHoldings = self.fundMatcher.matchHoldingsWithFunds(parsedHoldings, availableFunds: availableFunds)
+                
+                // 4. Create portfolio
+                return Portfolio(holdings: matchedHoldings)
+            }.value
             
-            // 2. Get current funds list for matching
-            let availableFunds = try await apiService.fetchAllFunds()
+            // Save portfolio and update UI state on main thread
+            await savePortfolio(result)
+            await MainActor.run {
+                isLoading = false
+                loadingState = .idle
+            }
             
-            // 3. Match holdings with available funds
-            let matchedHoldings = fundMatcher.matchHoldingsWithFunds(parsedHoldings, availableFunds: availableFunds)
-            
-            // 4. Create and save portfolio
-            let newPortfolio = Portfolio(holdings: matchedHoldings)
-            await savePortfolio(newPortfolio)
-            
-            isLoading = false
         } catch {
-            errorMessage = error.localizedDescription
-            isLoading = false
+            // Update error state on main thread
+            await MainActor.run {
+                errorMessage = error.localizedDescription
+                isLoading = false
+                loadingState = .idle
+            }
         }
     }
     
@@ -81,34 +98,48 @@ class HoldingsManager: ObservableObject {
     func refreshPortfolioData() async {
         guard let currentPortfolio = portfolio else { return }
         
-        isLoading = true
-        errorMessage = nil
+        // Update UI state on main thread
+        await MainActor.run {
+            isLoading = true
+            loadingState = .refreshingPortfolio
+            errorMessage = nil
+        }
         
         do {
-            // Try to get cached funds first, fallback to API if cache is empty
-            var availableFunds = DataCache.shared.getCachedFundsList()
+            // Perform heavy operations in background
+            let result = try await Task.detached(priority: .userInitiated) {
+                // Try to get cached funds first, fallback to API if cache is empty
+                var availableFunds = DataCache.shared.getCachedFundsList()
+                
+                if availableFunds == nil || availableFunds!.isEmpty {
+                    // Cache is empty, fetch from API (background task)
+                    availableFunds = try await self.apiService.fetchAllFunds()
+                }
+                
+                guard let funds = availableFunds, !funds.isEmpty else {
+                    throw APIService.APIError.noData
+                }
+                
+                // Re-match holdings with fund data (background task)  
+                let updatedHoldings = self.fundMatcher.matchHoldingsWithFunds(currentPortfolio.holdings, availableFunds: funds)
+                
+                return Portfolio(holdings: updatedHoldings)
+            }.value
             
-            if availableFunds == nil || availableFunds!.isEmpty {
-                // Cache is empty, fetch from API
-                availableFunds = try await apiService.fetchAllFunds()
-            }
-            
-            guard let funds = availableFunds, !funds.isEmpty else {
-                errorMessage = "Failed to load funds data. Please check your network connection."
+            // Update portfolio and UI state on main thread
+            await savePortfolio(result)
+            await MainActor.run {
                 isLoading = false
-                return
+                loadingState = .idle
             }
             
-            // Re-match holdings with fund data
-            let updatedHoldings = fundMatcher.matchHoldingsWithFunds(currentPortfolio.holdings, availableFunds: funds)
-            
-            let updatedPortfolio = Portfolio(holdings: updatedHoldings)
-            await savePortfolio(updatedPortfolio)
-            
-            isLoading = false
         } catch {
-            errorMessage = "Failed to refresh portfolio: \(error.localizedDescription)"
-            isLoading = false
+            // Update error state on main thread
+            await MainActor.run {
+                errorMessage = "Failed to refresh portfolio: \(error.localizedDescription)"
+                isLoading = false
+                loadingState = .idle
+            }
         }
     }
     
@@ -235,4 +266,11 @@ class HoldingsManager: ObservableObject {
     func clearError() {
         errorMessage = nil
     }
+}
+
+enum LoadingState {
+    case idle
+    case uploadingFile
+    case refreshingPortfolio
+    case processingData
 }

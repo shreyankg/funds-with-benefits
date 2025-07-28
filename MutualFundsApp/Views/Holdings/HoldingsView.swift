@@ -106,11 +106,22 @@ struct HoldingsView: View {
         .refreshable {
             await refreshPortfolio()
         }
-        .overlay {
-            if holdingsManager.isLoading {
-                ProgressView("Processing...")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.black.opacity(0.3))
+        .overlay(alignment: .top) {
+            if holdingsManager.isLoading && holdingsManager.loadingState == .refreshingPortfolio {
+                HStack {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                    Text("Refreshing portfolio...")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
+                .padding(.horizontal)
+                .padding(.top, 8)
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .animation(.easeInOut(duration: 0.3), value: holdingsManager.isLoading)
             }
         }
     }
@@ -165,10 +176,20 @@ struct HoldingsView: View {
             .padding(.top)
         }
         .overlay {
-            if holdingsManager.isLoading {
-                ProgressView("Processing file...")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.black.opacity(0.3))
+            if holdingsManager.isLoading && holdingsManager.loadingState == .uploadingFile {
+                VStack(spacing: 16) {
+                    ProgressView()
+                        .scaleEffect(1.2)
+                    Text("Processing holdings file...")
+                        .font(.headline)
+                    Text("This may take a few moments")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .padding(32)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.black.opacity(0.3))
             }
         }
     }
