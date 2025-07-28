@@ -28,7 +28,7 @@ A comprehensive iOS app for tracking and analyzing Indian mutual funds using rea
 - Responsive and intuitive user interface
 
 ### 📊 **Portfolio Holdings Management**
-- Import holdings from PDF statements
+- Import holdings from PDF statements (currently supports [Groww](https://groww.in/) app statements only)
 - Fund matching and portfolio tracking
 - Holdings overview and portfolio summary
 
@@ -164,4 +164,3 @@ SOFTWARE.
 
 FWB represents a new approach to mutual fund investing - combining powerful analysis tools with user-friendly design to make investment decisions easier and more informed. Our mission is to democratize access to professional-grade investment insights.
 
-**Built with ❤️ for Indian investors seeking better mutual fund analysis tools with real benefits.**
