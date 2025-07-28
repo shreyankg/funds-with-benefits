@@ -58,6 +58,10 @@ struct MutualFund: Codable, Identifiable, Hashable {
                schemeName.lowercased().contains("idcw")
     }
     
+    var isDirectPlan: Bool {
+        return schemeName.lowercased().contains("direct")
+    }
+    
     var category: String {
         let name = schemeName.lowercased()
         if name.contains("equity") || name.contains("large cap") || name.contains("mid cap") || name.contains("small cap") {

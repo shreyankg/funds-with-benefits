@@ -390,15 +390,15 @@ final class MutualFundsAppUITests: XCTestCase {
         
         // Check for empty state elements (when no holdings are uploaded)
         // These should be visible when no portfolio data exists
-        let noHoldingsText = app.staticTexts.containing(NSPredicate(format: "label CONTAINS[cd] 'No Holdings'")).firstMatch
-        let uploadButton = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'Upload Holdings'")).firstMatch
+        let noHoldingsText = app.staticTexts.containing(NSPredicate(format: "label CONTAINS[cd] 'No Holdings Found'")).firstMatch
+        let uploadButton = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'Upload Holdings File'")).firstMatch
         
         // Wait for empty state to load
         Thread.sleep(forTimeInterval: 2)
         
         // Check if empty state is shown (when no holdings exist)
         if noHoldingsText.exists {
-            XCTAssertTrue(noHoldingsText.exists, "Should show 'No Holdings' message in empty state")
+            XCTAssertTrue(noHoldingsText.exists, "Should show 'No Holdings Found' message in empty state")
             XCTAssertTrue(uploadButton.exists, "Should show upload button in empty state")
         }
         

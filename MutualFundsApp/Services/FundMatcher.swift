@@ -46,7 +46,12 @@ class FundMatcher: ObservableObject {
         var highestScore = 0.0
         
         for fund in funds {
-            let score = calculateMatchScore(holding: holding, fund: fund)
+            var score = calculateMatchScore(holding: holding, fund: fund)
+            
+            // Prioritize Direct + Growth funds as they are the default preference
+            if fund.isGrowthPlan && fund.isDirectPlan {
+                score += 0.1 // 10% bonus for Direct Growth funds
+            }
             
             if score > highestScore && score > 0.7 { // Minimum 70% match required
                 highestScore = score
