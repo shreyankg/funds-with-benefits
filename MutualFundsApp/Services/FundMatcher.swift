@@ -46,9 +46,13 @@ class FundMatcher: ObservableObject {
         for fund in funds {
             var score = calculateMatchScore(holding: holding, fund: fund)
             
-            // Prioritize Direct + Growth funds as they are the default preference
-            if fund.isGrowthPlan && fund.isDirectPlan {
-                score += 0.1 // 10% bonus for Direct Growth funds
+            // Prioritize Direct and Growth plans separately
+            if fund.isDirectPlan {
+                score += 0.05 // 5% bonus for Direct plans (lower expense ratios)
+            }
+            
+            if fund.isGrowthPlan {
+                score += 0.05 // 5% bonus for Growth plans (more common than dividend)
             }
             
             if score > highestScore && score > 0.7 { // Minimum 70% match required

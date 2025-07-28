@@ -84,19 +84,20 @@ class HoldingsManager: ObservableObject {
         isLoading = true
         errorMessage = nil
         
-        do {
-            // Re-fetch funds and re-match holdings
-            let availableFunds = try await apiService.fetchAllFunds()
-            let updatedHoldings = fundMatcher.matchHoldingsWithFunds(currentPortfolio.holdings, availableFunds: availableFunds)
-            
-            let updatedPortfolio = Portfolio(holdings: updatedHoldings)
-            await savePortfolio(updatedPortfolio)
-            
+        // Get current funds from cache without re-fetching
+        guard let availableFunds = DataCache.shared.getCachedFundsList(), !availableFunds.isEmpty else {
+            errorMessage = "No funds data available. Please refresh the Funds tab first."
             isLoading = false
-        } catch {
-            errorMessage = error.localizedDescription
-            isLoading = false
+            return
         }
+        
+        // Re-match holdings with existing fund data
+        let updatedHoldings = fundMatcher.matchHoldingsWithFunds(currentPortfolio.holdings, availableFunds: availableFunds)
+        
+        let updatedPortfolio = Portfolio(holdings: updatedHoldings)
+        await savePortfolio(updatedPortfolio)
+        
+        isLoading = false
     }
     
     // MARK: - Individual Holdings Management
