@@ -5,7 +5,7 @@ class DataCache {
     
     private let userDefaults = UserDefaults.standard
     private let cacheKeyPrefix = "MutualFunds_"
-    private let expirationTimeInterval: TimeInterval = 3600 // 1 hour
+    private let expirationTimeInterval: TimeInterval = 86400 // 24 hours (daily NAV updates)
     
     private init() {}
     
@@ -66,8 +66,8 @@ class DataCache {
         do {
             let cacheEntry = try JSONDecoder().decode(CacheEntry.self, from: data)
             
-            // Check if cache is expired (shorter expiration for fund history)
-            if Date().timeIntervalSince(cacheEntry.timestamp) > 1800 { // 30 minutes
+            // Check if cache is expired (daily NAV updates)
+            if Date().timeIntervalSince(cacheEntry.timestamp) > expirationTimeInterval { // 24 hours
                 return nil
             }
             

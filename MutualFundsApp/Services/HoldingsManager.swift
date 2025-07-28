@@ -84,20 +84,32 @@ class HoldingsManager: ObservableObject {
         isLoading = true
         errorMessage = nil
         
-        // Get current funds from cache without re-fetching
-        guard let availableFunds = DataCache.shared.getCachedFundsList(), !availableFunds.isEmpty else {
-            errorMessage = "No funds data available. Please refresh the Funds tab first."
+        do {
+            // Try to get cached funds first, fallback to API if cache is empty
+            var availableFunds = DataCache.shared.getCachedFundsList()
+            
+            if availableFunds == nil || availableFunds!.isEmpty {
+                // Cache is empty, fetch from API
+                availableFunds = try await apiService.fetchAllFunds()
+            }
+            
+            guard let funds = availableFunds, !funds.isEmpty else {
+                errorMessage = "Failed to load funds data. Please check your network connection."
+                isLoading = false
+                return
+            }
+            
+            // Re-match holdings with fund data
+            let updatedHoldings = fundMatcher.matchHoldingsWithFunds(currentPortfolio.holdings, availableFunds: funds)
+            
+            let updatedPortfolio = Portfolio(holdings: updatedHoldings)
+            await savePortfolio(updatedPortfolio)
+            
             isLoading = false
-            return
+        } catch {
+            errorMessage = "Failed to refresh portfolio: \(error.localizedDescription)"
+            isLoading = false
         }
-        
-        // Re-match holdings with existing fund data
-        let updatedHoldings = fundMatcher.matchHoldingsWithFunds(currentPortfolio.holdings, availableFunds: availableFunds)
-        
-        let updatedPortfolio = Portfolio(holdings: updatedHoldings)
-        await savePortfolio(updatedPortfolio)
-        
-        isLoading = false
     }
     
     // MARK: - Individual Holdings Management

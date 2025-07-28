@@ -117,16 +117,39 @@ xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name
 
 ## Key Implementation Details
 
+### Fund Matching Algorithm
+The app uses a sophisticated multi-factor matching system in `FundMatcher.swift` to match portfolio holdings with API fund data:
+
+**Scoring Components:**
+- **AMC/Fund House matching**: 25% weight
+- **Fund name similarity**: 45% weight (using Levenshtein distance, core name extraction, financial terms recognition)
+- **Plan type matching**: 20% weight (Direct vs Regular, Growth vs Dividend/IDCW)
+- **Category matching**: 10% weight (Equity, Debt, Hybrid)
+
+**Bonus System:**
+- **Direct plans**: +5% bonus (lower expense ratios)
+- **Growth plans**: +5% bonus (more common than dividend/IDCW)
+- **Combined Direct Growth**: +10% total bonus
+
+**Matching Process:**
+1. Normalize fund names (remove dashes, standardize terms)
+2. Extract core fund names (remove plan suffixes)
+3. Calculate multi-factor similarity scores
+4. Apply plan type and category bonuses
+5. Select best match above 70% threshold
+
 ### Performance Optimization
 - Lazy loading of fund details
 - Efficient caching with automatic expiration
 - Debounced search to minimize API calls
 - Chart performance optimization for large datasets
+- Portfolio refresh uses cached data instead of API re-fetching
 
 ### Error Handling
 - Comprehensive network error handling
 - JSON parsing error recovery with fallback mechanisms
 - Graceful handling of API format variations
+- Fund matching fallback for unmatched holdings
 
 ### Testing Strategy
 - Extensive unit test coverage for models and services

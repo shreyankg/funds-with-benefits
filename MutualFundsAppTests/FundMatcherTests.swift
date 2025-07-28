@@ -530,7 +530,8 @@ class FundMatcherTests: XCTestCase {
     }
     
     func testParagParikhConservativeHybridRegularPlanMatching() {
-        // Test the actual holding from the PDF: "Parag Parikh Conservative Hybrid Fund Growth" (Regular plan)
+        // Test the actual holding from the PDF: "Parag Parikh Conservative Hybrid Fund Growth" 
+        // when all 4 variants are available: Direct Growth, Regular Growth, Direct IDCW, Regular IDCW
         let holding = HoldingData(
             schemeName: "Parag Parikh Conservative Hybrid Fund Growth",
             amcName: "PPFAS Mutual Fund",
@@ -548,19 +549,24 @@ class FundMatcherTests: XCTestCase {
         
         let matchedHoldings = fundMatcher.matchHoldingsWithFunds([holding], availableFunds: mockFunds)
         
-        print("=== REGULAR PLAN MATCHING TEST ===")
-        print("Holding: '\(holding.schemeName)'")
-        print("Expected to match Regular plan (148959) but might get Direct plan (148958) due to prioritization")
+        print("=== ALL 4 VARIANTS MATCHING TEST ===")
+        print("Available funds:")
+        print("- 148958: Direct Plan Growth (+10% bonus)")
+        print("- 148959: Regular Plan Growth (+5% bonus)")  
+        print("- 148960: Direct Plan IDCW (+5% bonus)")
+        print("- 148961: Regular Plan IDCW (no bonus)")
+        print("Holding: '\(holding.schemeName)' (no 'Direct' specified)")
+        print("Expected match: Regular Plan Growth (148959)")
         print("Actual match: \(matchedHoldings.first?.matchedSchemeCode ?? "nil")")
         
-        // The regular plan should match, but due to Direct Growth prioritization, 
-        // it might match to Direct plan instead
-        XCTAssertNotNil(matchedHoldings.first?.matchedSchemeCode, "Regular plan should find some match")
+        XCTAssertNotNil(matchedHoldings.first?.matchedSchemeCode, "Should find a match among the 4 variants")
         
-        // Check which one it matched - could be either Regular (148959) or Direct (148958) due to prioritization
-        let matchedCode = matchedHoldings.first?.matchedSchemeCode
-        XCTAssertTrue(matchedCode == "148958" || matchedCode == "148959", 
-                     "Should match either Regular (148959) or Direct (148958) plan")
+        // Should match Regular Growth (148959) because:
+        // 1. Exact plan type match (Growth vs Growth)
+        // 2. Should not prioritize Direct since holding doesn't specify "Direct"
+        // 3. Should prefer Growth over IDCW
+        XCTAssertEqual(matchedHoldings.first?.matchedSchemeCode, "148959", 
+                     "Should match Regular Plan Growth (148959) when holding is 'Parag Parikh Conservative Hybrid Fund Growth' without 'Direct'")
     }
     
     // MARK: - Helper Methods
@@ -678,7 +684,7 @@ class FundMatcherTests: XCTestCase {
                 isinGrowth: "INF740K01XX1"
             ),
             
-            // Parag Parikh Conservative Hybrid Fund (Direct and Regular plans)
+            // Parag Parikh Conservative Hybrid Fund (All 4 variants for comprehensive testing)
             MutualFund(
                 schemeCode: "148958",
                 schemeName: "Parag Parikh Conservative Hybrid Fund - Direct Plan - Growth",
@@ -688,6 +694,16 @@ class FundMatcherTests: XCTestCase {
                 schemeCode: "148959",
                 schemeName: "Parag Parikh Conservative Hybrid Fund - Regular Plan - Growth",
                 isinGrowth: "INF016Q01XX3"
+            ),
+            MutualFund(
+                schemeCode: "148960",
+                schemeName: "Parag Parikh Conservative Hybrid Fund - Direct Plan - IDCW",
+                isinGrowth: "INF016Q01XX4"
+            ),
+            MutualFund(
+                schemeCode: "148961",
+                schemeName: "Parag Parikh Conservative Hybrid Fund - Regular Plan - IDCW",
+                isinGrowth: "INF016Q01XX5"
             )
         ]
     }
