@@ -39,8 +39,6 @@ class FundMatcher: ObservableObject {
     
     // Find best matching fund for a holding
     private func findBestMatch(for holding: HoldingData, in funds: [MutualFund]) -> String? {
-        let holdingName = holding.schemeName.lowercased()
-        let holdingAMC = holding.amcName.lowercased()
         
         var bestMatch: MutualFund?
         var highestScore = 0.0
@@ -78,31 +76,29 @@ class FundMatcher: ObservableObject {
             return 1.0
         }
         
-        // 2. Check key components match
-        let holdingComponents = normalizedHoldingName.components(separatedBy: .whitespaces)
-        let fundComponents = normalizedFundName.components(separatedBy: .whitespaces)
-        
-        // AMC/Fund House matching
+        // 2. AMC/Fund House matching (25% weight)
         let holdingAMC = holding.amcName.lowercased()
         let fundHouse = fund.fundHouse.lowercased()
         
         if matchesAMC(holdingAMC: holdingAMC, fundHouse: fundHouse) {
-            score += 0.3 // 30% for AMC match
+            score += 0.25 // 25% for AMC match
         }
         
-        // Scheme name component matching
-        let commonWords = Set(holdingComponents).intersection(Set(fundComponents))
-        let uniqueWords = Set(holdingComponents).union(Set(fundComponents))
+        // 3. Enhanced fund name similarity matching (45% weight)
+        let fundNameScore = calculateFundNameSimilarity(
+            holdingName: normalizedHoldingName,
+            fundName: normalizedFundName
+        )
+        score += fundNameScore * 0.45
         
-        if uniqueWords.count > 0 {
-            let wordMatchRatio = Double(commonWords.count) / Double(uniqueWords.count)
-            score += wordMatchRatio * 0.5 // 50% for word matching
-        }
-        
-        // Plan type matching (Growth, Direct, etc.)
+        // 4. Plan type matching (20% weight)
         if matchesPlanType(holdingName: holdingName, fundName: fundName) {
             score += 0.2 // 20% for plan type match
         }
+        
+        // 5. Category matching bonus (10% weight)
+        let categoryScore = calculateCategoryMatch(holding: holding, fund: fund)
+        score += categoryScore * 0.1
         
         return score
     }
@@ -172,7 +168,7 @@ class FundMatcher: ObservableObject {
             "bandhan": ["bandhan"]
         ]
         
-        for (key, variations) in amcMappings {
+        for (_, variations) in amcMappings {
             let holdingMatchesKey = variations.contains { normalizedHoldingAMC.contains($0) }
             let fundMatchesKey = variations.contains { normalizedFundHouse.contains($0) }
             
@@ -202,6 +198,166 @@ class FundMatcher: ObservableObject {
         }
         
         return true // All plan types match or both don't have them
+    }
+    
+    // Enhanced fund name similarity calculation
+    private func calculateFundNameSimilarity(holdingName: String, fundName: String) -> Double {
+        // Remove common suffixes/prefixes for core name comparison
+        let holdingCore = extractCoreFundName(holdingName)
+        let fundCore = extractCoreFundName(fundName)
+        
+        var similarity = 0.0
+        
+        // 1. Core name exact match (highest weight)
+        if holdingCore == fundCore {
+            similarity += 0.4
+        }
+        
+        // 2. Word-based similarity matching
+        let holdingWords = Set(holdingCore.components(separatedBy: .whitespaces).filter { !$0.isEmpty })
+        let fundWords = Set(fundCore.components(separatedBy: .whitespaces).filter { !$0.isEmpty })
+        
+        let commonWords = holdingWords.intersection(fundWords)
+        let totalWords = holdingWords.union(fundWords)
+        
+        if !totalWords.isEmpty {
+            let jaccardSimilarity = Double(commonWords.count) / Double(totalWords.count)
+            similarity += jaccardSimilarity * 0.3
+        }
+        
+        // 3. Key financial terms matching (gives bonus for similar fund types)
+        let keyTerms = extractKeyFinancialTerms(holdingCore, fundCore)
+        similarity += keyTerms * 0.2
+        
+        // 4. String distance similarity (for partial matches)
+        let distanceSimilarity = calculateLevenshteinSimilarity(holdingCore, fundCore)
+        similarity += distanceSimilarity * 0.1
+        
+        return min(similarity, 1.0) // Cap at 1.0
+    }
+    
+    // Extract core fund name by removing common prefixes/suffixes
+    private func extractCoreFundName(_ name: String) -> String {
+        var core = name
+        
+        // Remove plan type suffixes
+        let planSuffixes = ["direct growth", "growth", "direct plan growth", "plan growth", 
+                           "dividend", "idcw", "regular growth", "regular plan growth"]
+        for suffix in planSuffixes {
+            if core.hasSuffix(suffix) {
+                core = String(core.dropLast(suffix.count)).trimmingCharacters(in: .whitespaces)
+                break
+            }
+        }
+        
+        // Remove fund type suffixes
+        let fundSuffixes = ["fund", "scheme"]
+        for suffix in fundSuffixes {
+            if core.hasSuffix(suffix) {
+                core = String(core.dropLast(suffix.count)).trimmingCharacters(in: .whitespaces)
+                break
+            }
+        }
+        
+        return core.trimmingCharacters(in: .whitespaces)
+    }
+    
+    // Extract and match key financial terms
+    private func extractKeyFinancialTerms(_ holding: String, _ fund: String) -> Double {
+        let financialTerms = [
+            // Fund categories
+            "flexi cap", "flexicap", "large cap", "mid cap", "midcap", "small cap", "smallcap",
+            "multi cap", "multicap", "value", "growth", "blend", "focused", "conservative",
+            
+            // Investment styles  
+            "equity", "debt", "hybrid", "balanced", "liquid", "overnight", "short duration",
+            "medium duration", "long duration", "gilt", "credit", "dynamic", "aggressive",
+            
+            // Sectoral/Thematic
+            "banking", "pharma", "technology", "infrastructure", "consumption", "energy",
+            "healthcare", "financial", "auto", "metals", "fmcg", "textile", "realty",
+            
+            // Specialty
+            "elss", "tax saver", "pension", "retirement", "child", "arbitrage", "index",
+            "etf", "fof", "fund of fund", "international", "global", "emerging", "dividend",
+            "momentum", "alpha", "beta", "innovation", "opportunities", "special situations"
+        ]
+        
+        let holdingTerms = Set(financialTerms.filter { holding.contains($0) })
+        let fundTerms = Set(financialTerms.filter { fund.contains($0) })
+        
+        let commonTerms = holdingTerms.intersection(fundTerms)
+        let totalTerms = holdingTerms.union(fundTerms)
+        
+        guard !totalTerms.isEmpty else { return 0.0 }
+        
+        return Double(commonTerms.count) / Double(totalTerms.count)
+    }
+    
+    // Calculate Levenshtein distance similarity
+    private func calculateLevenshteinSimilarity(_ s1: String, _ s2: String) -> Double {
+        let distance = levenshteinDistance(s1, s2)
+        let maxLength = max(s1.count, s2.count)
+        
+        guard maxLength > 0 else { return 1.0 }
+        
+        return 1.0 - (Double(distance) / Double(maxLength))
+    }
+    
+    // Levenshtein distance implementation
+    private func levenshteinDistance(_ s1: String, _ s2: String) -> Int {
+        let a1 = Array(s1)
+        let a2 = Array(s2)
+        
+        var distances = Array(0...a2.count)
+        
+        for (i, char1) in a1.enumerated() {
+            var newDistances = [i + 1]
+            
+            for (j, char2) in a2.enumerated() {
+                let cost = char1 == char2 ? 0 : 1
+                let minDistance = min(
+                    distances[j + 1] + 1,     // deletion
+                    newDistances[j] + 1,      // insertion  
+                    distances[j] + cost       // substitution
+                )
+                newDistances.append(minDistance)
+            }
+            
+            distances = newDistances
+        }
+        
+        return distances.last ?? 0
+    }
+    
+    // Calculate category matching score
+    private func calculateCategoryMatch(holding: HoldingData, fund: MutualFund) -> Double {
+        let holdingCategory = holding.category.lowercased()
+        let fundCategory = fund.category.lowercased()
+        
+        // Exact category match
+        if holdingCategory == fundCategory {
+            return 1.0
+        }
+        
+        // Partial category matches (e.g., "Equity" matches with equity subcategories)
+        let categoryMappings: [String: Set<String>] = [
+            "equity": ["equity", "large cap", "mid cap", "small cap", "flexi cap", "multi cap", "value", "thematic", "sectoral"],
+            "debt": ["debt", "liquid", "overnight", "short duration", "medium duration", "long duration", "gilt", "credit"],
+            "hybrid": ["hybrid", "balanced", "conservative", "aggressive", "dynamic asset allocation", "multi asset"],
+            "commodities": ["commodities", "gold", "silver", "commodity"]
+        ]
+        
+        for (_, variants) in categoryMappings {
+            let holdingMatches = variants.contains { holdingCategory.contains($0) }
+            let fundMatches = variants.contains { fundCategory.contains($0) }
+            
+            if holdingMatches && fundMatches {
+                return 0.8 // High similarity for same category family
+            }
+        }
+        
+        return 0.0 // No category match
     }
     
     // Get match confidence for UI display

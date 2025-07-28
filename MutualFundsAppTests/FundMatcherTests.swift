@@ -292,6 +292,164 @@ class FundMatcherTests: XCTestCase {
         XCTAssertEqual(confidence, .high)
     }
     
+    // MARK: - Enhanced Fund Name Matching Tests
+    
+    func testEnhancedFundNameSimilarity() {
+        let holding = HoldingData(
+            schemeName: "Mirae Asset Large & Midcap Fund Direct Growth",
+            amcName: "Mirae Asset Mutual Fund",
+            category: "Equity",
+            subCategory: "Large & MidCap",
+            folioNumber: "77740249741",
+            source: "Groww",
+            units: 657.514,
+            investedValue: 83601.84,
+            currentValue: 110548.49,
+            returns: 26946.65,
+            xirr: 16.32,
+            matchedSchemeCode: nil
+        )
+        
+        let matchedHoldings = fundMatcher.matchHoldingsWithFunds([holding], availableFunds: mockFunds)
+        
+        XCTAssertNotNil(matchedHoldings.first?.matchedSchemeCode)
+        XCTAssertEqual(matchedHoldings.first?.matchedSchemeCode, "111001")
+    }
+    
+    func testFundNameVariationMatching() {
+        // Test flexicap vs flexi cap variations
+        let holding = HoldingData(
+            schemeName: "ICICI Prudential Flexicap Fund Direct Growth",
+            amcName: "ICICI Prudential Mutual Fund",
+            category: "Equity",
+            subCategory: "Flexi Cap",
+            folioNumber: "18249066",
+            source: "Groww",
+            units: 2272.955,
+            investedValue: 27998.58,
+            currentValue: 44277.16,
+            returns: 16278.58,
+            xirr: 17.98,
+            matchedSchemeCode: nil
+        )
+        
+        let matchedHoldings = fundMatcher.matchHoldingsWithFunds([holding], availableFunds: mockFunds)
+        
+        XCTAssertNotNil(matchedHoldings.first?.matchedSchemeCode)
+        // Should match even with slight name variations
+        XCTAssertEqual(matchedHoldings.first?.matchedSchemeCode, "103001")
+    }
+    
+    func testSimilarFundNamesDistinction() {
+        // Test that similar but different funds are distinguished
+        let holding1 = HoldingData(
+            schemeName: "Axis Small Cap Fund Direct Growth",
+            amcName: "Axis Mutual Fund",
+            category: "Equity",
+            subCategory: "Small Cap",
+            folioNumber: "91093871226",
+            source: "Groww",
+            units: 709.806,
+            investedValue: 54949.99,
+            currentValue: 87852.69,
+            returns: 32902.70,
+            xirr: 21.62,
+            matchedSchemeCode: nil
+        )
+        
+        let holding2 = HoldingData(
+            schemeName: "Axis Innovation Fund Direct Growth",
+            amcName: "Axis Mutual Fund",
+            category: "Equity",
+            subCategory: "Thematic",
+            folioNumber: "91093871226",
+            source: "Groww",
+            units: 3169.974,
+            investedValue: 37682.03,
+            currentValue: 62638.69,
+            returns: 24956.65,
+            xirr: 16.57,
+            matchedSchemeCode: nil
+        )
+        
+        let matchedHoldings = fundMatcher.matchHoldingsWithFunds([holding1, holding2], availableFunds: mockFunds)
+        
+        // Both should find matches but to different funds
+        XCTAssertNotNil(matchedHoldings[0].matchedSchemeCode)
+        XCTAssertNotNil(matchedHoldings[1].matchedSchemeCode)
+        XCTAssertNotEqual(matchedHoldings[0].matchedSchemeCode, matchedHoldings[1].matchedSchemeCode)
+        
+        // Should match to their respective fund types
+        XCTAssertEqual(matchedHoldings[0].matchedSchemeCode, "102002") // Small Cap
+        XCTAssertEqual(matchedHoldings[1].matchedSchemeCode, "112001") // Innovation/Thematic
+    }
+    
+    func testCategoryMatchingBonus() {
+        let holding = HoldingData(
+            schemeName: "Nippon India Short Duration Fund Direct Growth",
+            amcName: "Nippon India Mutual Fund",
+            category: "Debt",
+            subCategory: "Short Duration",
+            folioNumber: "477233506686",
+            source: "Groww",
+            units: 171.154,
+            investedValue: 7721.13,
+            currentValue: 9916.34,
+            returns: 2195.20,
+            xirr: 7.8,
+            matchedSchemeCode: nil
+        )
+        
+        let matchedHoldings = fundMatcher.matchHoldingsWithFunds([holding], availableFunds: mockFunds)
+        
+        XCTAssertNotNil(matchedHoldings.first?.matchedSchemeCode)
+        XCTAssertEqual(matchedHoldings.first?.matchedSchemeCode, "113001")
+    }
+    
+    func testFOFFundMatching() {
+        let holding = HoldingData(
+            schemeName: "Motilal Oswal Nasdaq 100 FOF Direct Growth",
+            amcName: "Motilal Oswal Mutual Fund",
+            category: "Equity",
+            subCategory: "International",
+            folioNumber: "91019516133",
+            source: "Groww",
+            units: 509.447,
+            investedValue: 10873.75,
+            currentValue: 21682.52,
+            returns: 10808.77,
+            xirr: 17.9,
+            matchedSchemeCode: nil
+        )
+        
+        let matchedHoldings = fundMatcher.matchHoldingsWithFunds([holding], availableFunds: mockFunds)
+        
+        XCTAssertNotNil(matchedHoldings.first?.matchedSchemeCode)
+        XCTAssertEqual(matchedHoldings.first?.matchedSchemeCode, "114001")
+    }
+    
+    func testThematicFundMatching() {
+        let holding = HoldingData(
+            schemeName: "DSP Natural Resources and New Energy Fund Direct Plan Growth",
+            amcName: "DSP Mutual Fund",
+            category: "Equity",
+            subCategory: "Thematic",
+            folioNumber: "6438363",
+            source: "Groww",
+            units: 775.596,
+            investedValue: 54070.12,
+            currentValue: 77475.06,
+            returns: 23404.94,
+            xirr: 16.7,
+            matchedSchemeCode: nil
+        )
+        
+        let matchedHoldings = fundMatcher.matchHoldingsWithFunds([holding], availableFunds: mockFunds)
+        
+        XCTAssertNotNil(matchedHoldings.first?.matchedSchemeCode)
+        XCTAssertEqual(matchedHoldings.first?.matchedSchemeCode, "115001")
+    }
+    
     // MARK: - Helper Methods
     
     private func createMockFunds() -> [MutualFund] {
@@ -374,6 +532,37 @@ class FundMatcherTests: XCTestCase {
                 schemeCode: "110001",
                 schemeName: "Axis ELSS Tax Saver Fund Growth",
                 isinGrowth: "INF846K01XX3"
+            ),
+            
+            // Additional funds for enhanced name matching tests
+            MutualFund(
+                schemeCode: "111001",
+                schemeName: "Mirae Asset Large & Mid Cap Fund Direct Growth",
+                isinGrowth: "INF769K01XX1"
+            ),
+            
+            MutualFund(
+                schemeCode: "112001",
+                schemeName: "Axis Innovation Fund Direct Growth",
+                isinGrowth: "INF846K01XX4"
+            ),
+            
+            MutualFund(
+                schemeCode: "113001",
+                schemeName: "Nippon India Short Duration Fund Direct Growth",
+                isinGrowth: "INF204K01XX2"
+            ),
+            
+            MutualFund(
+                schemeCode: "114001",
+                schemeName: "Motilal Oswal Nasdaq 100 FOF Direct Growth",
+                isinGrowth: "INF360L01XX2"
+            ),
+            
+            MutualFund(
+                schemeCode: "115001",
+                schemeName: "DSP Natural Resources and New Energy Fund Direct Growth",
+                isinGrowth: "INF740K01XX1"
             )
         ]
     }
