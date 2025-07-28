@@ -730,12 +730,17 @@ final class MutualFundsAppTests: XCTestCase {
     func testHoldingsManagerPortfolioStorage() throws {
         let holdingsManager = HoldingsManager.shared
         
-        // Clear any existing portfolio
+        // Clear any existing portfolio and wait for completion
+        let clearExpectation = XCTestExpectation(description: "Portfolio cleared")
+        
         Task { @MainActor in
             holdingsManager.clearPortfolio()
             XCTAssertNil(holdingsManager.portfolio)
             XCTAssertFalse(holdingsManager.hasHoldings)
+            clearExpectation.fulfill()
         }
+        
+        wait(for: [clearExpectation], timeout: 5.0)
         
         let testHolding = HoldingData(
             schemeName: "Test Fund",
@@ -770,10 +775,15 @@ final class MutualFundsAppTests: XCTestCase {
         
         wait(for: [expectation], timeout: 5.0)
         
-        // Clean up
+        // Clean up and wait for completion
+        let cleanupExpectation = XCTestExpectation(description: "Portfolio cleaned up")
+        
         Task { @MainActor in
             holdingsManager.clearPortfolio()
+            cleanupExpectation.fulfill()
         }
+        
+        wait(for: [cleanupExpectation], timeout: 5.0)
     }
     
     func testHoldingsManagerAnalytics() throws {
