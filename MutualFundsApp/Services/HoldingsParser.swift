@@ -68,7 +68,7 @@ class HoldingsParser: ObservableObject {
     }
     
     // Parse extracted text to find holdings data
-    private func parseHoldingsText(_ text: String) throws -> [HoldingData] {
+    internal func parseHoldingsText(_ text: String) throws -> [HoldingData] {
         var holdings: [HoldingData] = []
         let lines = text.components(separatedBy: .newlines)
         
@@ -146,8 +146,7 @@ class HoldingsParser: ObservableObject {
         let textComponents = Array(components[0..<numericIndices[0]])
         guard textComponents.count >= 6 else { return nil }
         
-        // Try to extract scheme name (usually the first several words)
-        var schemeNameComponents: [String] = []
+        // Extract scheme name and AMC name
         var amcName = ""
         var category = ""
         var subCategory = ""
@@ -161,28 +160,84 @@ class HoldingsParser: ObservableObject {
             subCategory = textComponents[textComponents.count - 3]
             category = textComponents[textComponents.count - 4]
             
-            // AMC could be 1-3 words
-            var amcComponents: [String] = []
-            var schemeComponents: [String] = []
-            
-            // Simple heuristic: if we see "Mutual Fund" or similar, that's part of AMC
+            // The remaining components contain Scheme Name + AMC Name
             let remainingComponents = Array(textComponents[0..<(textComponents.count - 4)])
+            
+            // Better parsing logic: Look for known AMC patterns that end with "Mutual Fund"
+            var schemeComponents: [String] = []
+            var amcComponents: [String] = []
             var foundAMC = false
             
-            for (index, component) in remainingComponents.enumerated() {
-                if component.contains("Mutual") || component.contains("Fund") || component.contains("Asset") {
-                    amcComponents = Array(remainingComponents[max(0, index-2)...index])
-                    schemeComponents = Array(remainingComponents[0..<max(0, index-2)])
-                    foundAMC = true
-                    break
+            // Known AMC patterns that typically end with "Mutual Fund"
+            let amcPatterns = [
+                "SBI Mutual Fund",
+                "Axis Mutual Fund", 
+                "ICICI Prudential Mutual Fund",
+                "HDFC Mutual Fund",
+                "Kotak Mahindra Mutual Fund",
+                "Aditya Birla Sun Life Mutual Fund",
+                "Franklin Templeton Mutual Fund",
+                "Mirae Asset Mutual Fund",
+                "Nippon India Mutual Fund",
+                "Tata Mutual Fund",
+                "DSP Mutual Fund",
+                "Motilal Oswal Mutual Fund",
+                "PPFAS Mutual Fund",
+                "Quant Mutual Fund",
+                "Navi Mutual Fund",
+                "Groww Mutual Fund",
+                "Canara Robeco Mutual Fund",
+                "360 ONE Mutual Fund",
+                "Mahindra Mutual Fund",
+                "Bandhan Mutual Fund"
+            ]
+            
+            // Try to find AMC by matching known patterns
+            let fullText = remainingComponents.joined(separator: " ")
+            
+            for pattern in amcPatterns {
+                if let amcRange = fullText.range(of: pattern) {
+                    let schemeText = String(fullText[..<amcRange.lowerBound]).trimmingCharacters(in: .whitespaces)
+                    let amcText = String(fullText[amcRange]).trimmingCharacters(in: .whitespaces)
+                    
+                    if !schemeText.isEmpty {
+                        schemeComponents = schemeText.components(separatedBy: " ")
+                        amcComponents = amcText.components(separatedBy: " ")
+                        foundAMC = true
+                        break
+                    }
                 }
             }
             
+            // Fallback: If no known AMC pattern found, use heuristic
             if !foundAMC && remainingComponents.count > 0 {
-                // Fallback: assume first word is scheme name, rest before last 4 is AMC
-                let splitPoint = max(1, remainingComponents.count - 3)
-                schemeComponents = Array(remainingComponents[0..<splitPoint])
-                amcComponents = Array(remainingComponents[splitPoint...])
+                // Look for "Mutual Fund" as end of AMC name
+                var foundMutualFund = false
+                for i in stride(from: remainingComponents.count - 1, through: 1, by: -1) {
+                    if i < remainingComponents.count - 1 && 
+                       remainingComponents[i] == "Mutual" && 
+                       remainingComponents[i + 1] == "Fund" {
+                        schemeComponents = Array(remainingComponents[0..<i])
+                        amcComponents = Array(remainingComponents[i...])
+                        foundMutualFund = true
+                        break
+                    }
+                }
+                
+                // Final fallback: Split roughly in middle, but preserve common scheme patterns
+                if !foundMutualFund {
+                    let totalComponents = remainingComponents.count
+                    if totalComponents >= 4 {
+                        // Assume last 2-3 components are AMC
+                        let amcStartIndex = max(1, totalComponents - 3)
+                        schemeComponents = Array(remainingComponents[0..<amcStartIndex])
+                        amcComponents = Array(remainingComponents[amcStartIndex...])
+                    } else {
+                        // Very short, put most in scheme name
+                        schemeComponents = Array(remainingComponents[0..<max(1, totalComponents - 1)])
+                        amcComponents = Array(remainingComponents[max(1, totalComponents - 1)...])
+                    }
+                }
             }
             
             let schemeName = schemeComponents.joined(separator: " ")

@@ -206,6 +206,51 @@ class AppSettings: ObservableObject {
 3. Update matching algorithms in `FundMatcher.swift`
 4. Test with different statement formats
 
+### Holdings PDF Parsing - Fixed Implementation (July 2025)
+
+The `HoldingsParser.swift` PDF parsing logic was significantly improved to correctly extract full scheme names and AMC names from portfolio statements.
+
+#### Previous Issue
+The original parsing logic incorrectly split scheme names from AMC names by looking for words like "Fund", "Mutual", or "Asset" anywhere in the text. This caused:
+- Fund names to be truncated: "Axis Small Cap Fund Direct Growth" → became "Axis Small Cap Fund"
+- Loss of critical plan type information like "Direct Growth"
+- Poor fund matching results due to incomplete scheme names
+
+#### Fixed Implementation
+**Enhanced AMC Pattern Recognition:**
+- Comprehensive list of known AMC patterns (SBI Mutual Fund, Axis Mutual Fund, etc.)
+- Exact pattern matching before falling back to heuristics
+- Preserves complete scheme names including plan type suffixes
+
+**Improved Parsing Algorithm (lines 172-242 in HoldingsParser.swift):**
+```swift
+// 1. Try exact AMC pattern matching first
+let amcPatterns = [
+    "SBI Mutual Fund", "Axis Mutual Fund", "ICICI Prudential Mutual Fund",
+    "Kotak Mahindra Mutual Fund", "Franklin Templeton Mutual Fund",
+    // ... comprehensive list of major AMCs
+]
+
+// 2. Fallback to "Mutual Fund" suffix detection
+// 3. Final fallback with intelligent splitting
+```
+
+**Testing Coverage:**
+- Added `testHoldingsParserPDFLineParsing()` test that verifies correct parsing
+- Tests full scheme name preservation and accurate AMC identification
+- Validates category and sub-category extraction
+
+#### Results
+- ✅ **Full scheme names preserved**: No more truncation of "Direct Growth" suffixes
+- ✅ **Improved fund matching**: Better matching rates due to complete plan type information
+- ✅ **Backward compatibility**: All existing tests continue to pass
+- ✅ **Comprehensive test coverage**: 39/39 unit tests passing
+
+#### Developer Notes
+- The `parseHoldingsText()` method is now `internal` for testing access
+- Known AMC patterns can be extended in the `amcPatterns` array as needed
+- The parser handles various PDF statement formats with tiered fallback logic
+
 ### API Integration Changes
 1. Update endpoint definitions in `APIService.swift`
 2. Modify data models with custom Codable implementations

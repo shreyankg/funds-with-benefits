@@ -951,6 +951,52 @@ final class MutualFundsAppTests: XCTestCase {
     
     // MARK: - Holdings Parser Tests
     
+    func testHoldingsParserPDFLineParsing() throws {
+        // Test the fixed parsing logic with a real line from the PDF
+        let parser = HoldingsParser.shared
+        
+        // Sample line from your PDF: "Axis Small Cap Fund Direct Growth Axis Mutual Fund Equity Small Cap 91093871226 Groww 709.806 54949.99 87852.69 32902.7005 21.62%"
+        let sampleLine = "Axis Small Cap Fund Direct Growth Axis Mutual Fund Equity Small Cap 91093871226 Groww 709.806 54949.99 87852.69 32902.7005 21.62%"
+        
+        // Use reflection to access the private parseHoldingLine method for testing
+        let mirror = Mirror(reflecting: parser)
+        let parseMethod = mirror.children.first { $0.label == "parseHoldingLine" }
+        
+        // For now, let's test the full parsing flow with a mock PDF content
+        let mockPDFContent = """
+        HOLDINGS AS ON 2025-07-27
+        Scheme Name AMC Category Sub-category Folio No. Source Units Invested Value Current Value Returns XIRR
+        Axis Small Cap Fund Direct Growth Axis Mutual Fund Equity Small Cap 91093871226 Groww 709.806 54949.99 87852.69 32902.7005 21.62%
+        SBI Conservative Hybrid Fund Direct Growth SBI Mutual Fund Hybrid Conservative Hybrid 22821659 External 610.664 32931.93 48581.37 15649.4453 10.19%
+        """
+        
+        do {
+            // This will call our fixed parsing logic
+            let holdings = try parser.parseHoldingsText(mockPDFContent)
+            
+            XCTAssertEqual(holdings.count, 2, "Should parse 2 holdings")
+            
+            // Test the first holding (Axis Small Cap Fund)
+            let axisHolding = holdings.first { $0.schemeName.contains("Axis") }
+            XCTAssertNotNil(axisHolding, "Should find Axis holding")
+            XCTAssertEqual(axisHolding?.schemeName, "Axis Small Cap Fund Direct Growth", "Should preserve full scheme name including 'Direct Growth'")
+            XCTAssertEqual(axisHolding?.amcName, "Axis Mutual Fund", "Should correctly identify AMC name")
+            XCTAssertEqual(axisHolding?.category, "Equity", "Should correctly identify category")
+            XCTAssertEqual(axisHolding?.subCategory, "Small Cap", "Should correctly identify sub-category")
+            
+            // Test the second holding (SBI Conservative Hybrid Fund)
+            let sbiHolding = holdings.first { $0.schemeName.contains("SBI") }
+            XCTAssertNotNil(sbiHolding, "Should find SBI holding")
+            XCTAssertEqual(sbiHolding?.schemeName, "SBI Conservative Hybrid Fund Direct Growth", "Should preserve full scheme name including 'Direct Growth'")
+            XCTAssertEqual(sbiHolding?.amcName, "SBI Mutual Fund", "Should correctly identify AMC name")
+            XCTAssertEqual(sbiHolding?.category, "Hybrid", "Should correctly identify category")
+            XCTAssertEqual(sbiHolding?.subCategory, "Conservative Hybrid", "Should correctly identify sub-category")
+            
+        } catch {
+            XCTFail("Parsing should not fail: \(error)")
+        }
+    }
+    
     func testHoldingsParserCSVParsing() throws {
         let csvContent = """
         Scheme Name,AMC,Category,Sub Category,Folio Number,Source,Units,Invested Value,Current Value,Returns,XIRR
