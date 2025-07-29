@@ -32,15 +32,16 @@ FundsWithBenefitsApp/
 │   └── Portfolio.swift          # Portfolio management
 ├── Views/                       # SwiftUI views
 │   ├── SplashScreenView.swift   # App launch splash
-│   ├── FundsListView.swift      # Main fund listing
+│   ├── FundsListView.swift      # Main fund listing with dividend filtering
 │   ├── FundDetailView.swift     # Individual fund analysis
+│   ├── SettingsView.swift       # App settings and preferences
 │   └── Holdings/                # Portfolio holdings views
 ├── Services/                    # External services
-│   ├── APIService.swift         # API communication
+│   ├── APIService.swift         # API communication & AppSettings
 │   ├── DataCache.swift          # Caching system
 │   ├── HoldingsParser.swift     # PDF statement parsing
 │   ├── HoldingsManager.swift    # Holdings data management
-│   └── FundMatcher.swift        # Fund matching service
+│   └── FundMatcher.swift        # Fund matching with dividend filtering
 └── Extensions/                  # Utilities
     ├── Date+Extensions.swift
     └── Double+Extensions.swift
@@ -157,6 +158,40 @@ The app uses a sophisticated multi-factor matching system in `FundMatcher.swift`
 - Integration tests for API and cache management
 - Manual testing checklist for release validation
 
+## Settings & User Preferences
+
+### AppSettings Architecture
+The app uses a singleton `AppSettings` class for managing user preferences:
+
+```swift
+class AppSettings: ObservableObject {
+    static let shared = AppSettings()
+    @Published var showDividendFunds: Bool
+    
+    func filteredFunds(_ funds: [MutualFund]) -> [MutualFund]
+}
+```
+
+**Key Features:**
+- **Persistent Storage**: Settings are saved to UserDefaults automatically
+- **Reactive Updates**: Uses `@Published` properties for SwiftUI integration
+- **Real-time Filtering**: Changes immediately affect fund listings and portfolio matching
+
+### Dividend Fund Filtering
+- **Default Behavior**: Dividend/IDCW funds are hidden by default for better UX
+- **Detection Logic**: Uses `MutualFund.isDividendPlan` property (checks for "dividend" or "idcw" in scheme name)
+- **Integration Points**: 
+  - `FundsViewModel.filterFunds()` - Filters fund listings
+  - `FundMatcher.matchHoldingsWithFunds()` - Respects filter in portfolio matching
+- **UI Updates**: Debounced Combine subscriptions ensure immediate UI refresh
+
+### Adding New Settings
+1. Add new `@Published` property to `AppSettings`
+2. Update `filteredFunds()` or add new filtering methods
+3. Add UI controls to `SettingsView` (inline in `ContentView.swift`)
+4. Subscribe to changes in relevant ViewModels using Combine
+5. Add test coverage in `MutualFundsAppTests.swift`
+
 ## Common Development Tasks
 
 ### Adding New Metrics
@@ -206,8 +241,20 @@ The following test failures have been successfully fixed:
 - ✅ `MutualFundsAppTests.testHoldingsManagerAnalytics()` - Portfolio analytics calculations
 
 **Current Test Status:**
-- **Unit Tests**: 33/33 passing ✅
+- **Unit Tests**: 32/38 passing ⚠️ (6 tests failing due to dividend filter integration)
 - **UI Tests**: 13/14 passing ✅ (1 minor failure unrelated to core functionality)
+
+**Failing Tests:**
+- ❌ `MutualFundsAppTests.testFundMatcherNoMatch()` - Affected by dividend filtering logic
+- ❌ `MutualFundsAppTests.testFundMatcherAMCVariations()` - Affected by dividend filtering logic  
+- ❌ `MutualFundsAppTests.testFundMatcherExactMatch()` - Affected by dividend filtering logic
+
+**New Test Coverage Added:**
+- ✅ `testAppSettingsDefaultValue()` - Verifies dividend funds hidden by default
+- ✅ `testDividendFundFiltering()` - Validates filtering logic with mock data  
+- ✅ `testFundMatcherWithDividendFiltering()` - Ensures matching respects settings
+- ✅ `testFundsListViewObservesSettings()` - Confirms UI observes settings changes
+- ✅ `testSettingsViewToggleChangesValue()` - Validates UserDefaults persistence
 
 The test failures were primarily caused by MainActor timing issues in async test operations. Fixed by implementing proper `XCTestExpectation` handling to synchronize async operations with test execution.
 

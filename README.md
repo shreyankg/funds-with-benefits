@@ -25,12 +25,18 @@ A comprehensive iOS app for tracking and analyzing Indian mutual funds using rea
 ### 🔍 **Smart Search & Filters**
 - Instant search across fund names, codes, and fund houses
 - Category filters for focused browsing
+- Dividend fund filter (hide/show dividend/IDCW plans)
 - Responsive and intuitive user interface
 
 ### 📊 **Portfolio Holdings Management**
 - Import holdings from PDF statements (currently supports [Groww](https://groww.in/) app statements only)
-- Fund matching and portfolio tracking
+- Fund matching and portfolio tracking with intelligent filtering
 - Holdings overview and portfolio summary
+
+### ⚙️ **Settings & Preferences**
+- Toggle to show/hide dividend funds (hidden by default for better UX)
+- Settings persist across app sessions
+- Real-time filtering that affects both fund listings and portfolio matching
 
 ## Technical Stack
 
