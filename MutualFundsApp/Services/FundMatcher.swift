@@ -23,13 +23,15 @@ class FundMatcher: ObservableObject {
     
     // MARK: - Performance Optimization Methods
     
-    // Preprocess funds data to populate caches for faster matching
+    // Preprocess funds data to populate caches for faster matching with simplified filtering
     func preprocessFundsData(_ funds: [MutualFund]) {
         fundPreprocessingCache.removeAll()
         amcLookupIndex.removeAll()
         
         for fund in funds {
-            let normalizedName = getCachedNormalizedName(fund.schemeName)
+            // Apply simplified filtering during preprocessing for better performance
+            let filteredName = applySimplifiedFiltering(fund.schemeName)
+            let normalizedName = getCachedNormalizedName(filteredName)
             let normalizedAMC = fund.fundHouse.lowercased()
             let coreName = extractCoreFundName(normalizedName)
             let keyTerms = extractKeyFinancialTermsSet(normalizedName)
@@ -53,6 +55,25 @@ class FundMatcher: ObservableObject {
             // Also add AMC variations to index
             addAMCVariationsToIndex(fund: fund, normalizedAMC: normalizedAMC)
         }
+    }
+    
+    // Apply simplified filtering to remove basic keywords before caching
+    private func applySimplifiedFiltering(_ name: String) -> String {
+        var filtered = name
+        
+        // Remove basic keywords and punctuation, preserving A/C abbreviations
+        let keywordsToRemove = ["plan", "option"]
+        for keyword in keywordsToRemove {
+            filtered = filtered.replacingOccurrences(of: keyword, with: "", options: .caseInsensitive)
+        }
+        
+        // Remove hyphens but be careful not to break compound words
+        filtered = filtered.replacingOccurrences(of: "-", with: " ")
+        
+        // Clean up extra spaces
+        filtered = filtered.replacingOccurrences(of: "  ", with: " ")
+        
+        return filtered.trimmingCharacters(in: .whitespacesAndNewlines)
     }
     
     // Add AMC variations to lookup index for better matching
@@ -182,7 +203,7 @@ class FundMatcher: ObservableObject {
         return matchedHoldings
     }
     
-    // Optimized version of findBestMatch using cached data
+    // Optimized version of findBestMatch using cached data with simplified filtering
     private func findBestMatchOptimized(for holding: HoldingData, in funds: [MutualFund]) -> String? {
         // Get candidate funds for this holding's AMC to reduce search space
         let candidateFunds = getCandidateFundsForAMC(holding.amcName, from: funds)
@@ -190,8 +211,9 @@ class FundMatcher: ObservableObject {
         var bestMatch: MutualFund?
         var highestScore = 0.0
         
-        // First pass: Look for exact matches to enable early termination
-        let holdingNormalized = getCachedNormalizedName(holding.schemeName)
+        // Apply simplified filtering to holding name and then normalize
+        let filteredHoldingName = applySimplifiedFiltering(holding.schemeName)
+        let holdingNormalized = getCachedNormalizedName(filteredHoldingName)
         
         for fund in candidateFunds {
             if let preprocessed = fundPreprocessingCache[fund.schemeCode] {
@@ -200,7 +222,7 @@ class FundMatcher: ObservableObject {
                     return fund.schemeCode // Early termination on exact match
                 }
                 
-                var score = calculateMatchScoreOptimized(holding: holding, preprocessedFund: preprocessed)
+                var score = calculateMatchScoreOptimized(holding: holding, preprocessedFund: preprocessed, filteredHoldingName: filteredHoldingName)
                 
                 // Apply bonuses
                 if fund.isDirectPlan {
@@ -221,9 +243,9 @@ class FundMatcher: ObservableObject {
         return bestMatch?.schemeCode
     }
     
-    // Optimized match score calculation using preprocessed data
-    private func calculateMatchScoreOptimized(holding: HoldingData, preprocessedFund: PreprocessedFund) -> Double {
-        let holdingNormalized = getCachedNormalizedName(holding.schemeName)
+    // Optimized match score calculation using preprocessed data with simplified filtering
+    private func calculateMatchScoreOptimized(holding: HoldingData, preprocessedFund: PreprocessedFund, filteredHoldingName: String) -> Double {
+        let holdingNormalized = getCachedNormalizedName(filteredHoldingName)
         let fund = preprocessedFund.fund
         
         var score = 0.0
@@ -387,7 +409,7 @@ class FundMatcher: ObservableObject {
         return score
     }
     
-    // Normalize fund names for better matching
+    // Normalize fund names for better matching - simplified approach
     private func normalizeNameForMatching(_ name: String) -> String {
         var normalized = name.lowercased()
         
@@ -408,19 +430,8 @@ class FundMatcher: ObservableObject {
             normalized = normalized.replacingOccurrences(of: old, with: new)
         }
         
-        // Remove common plan type patterns that add noise to matching
-        let planPatterns = [
-            "regular plan", "growth plan", "institutional plan", "pf plan",
-            "super institutional plan", "premium plan", "composite plan",
-            "treasury plan", "plan a", "plan b", "plan c"
-        ]
-        
-        for pattern in planPatterns {
-            normalized = normalized.replacingOccurrences(of: pattern, with: "")
-        }
-        
-        // Remove common suffixes/prefixes that might cause mismatches
-        let wordsToRemove = ["plan", "scheme", "-", "(", ")", "[", "]"]
+        // Simplified: Remove only basic keywords and punctuation
+        let wordsToRemove = ["plan", "option", "-", "(", ")", "[", "]"]
         for word in wordsToRemove {
             normalized = normalized.replacingOccurrences(of: word, with: " ")
         }
@@ -531,24 +542,11 @@ class FundMatcher: ObservableObject {
         return min(similarity, 1.0) // Cap at 1.0
     }
     
-    // Extract core fund name by removing common prefixes/suffixes
+    // Extract core fund name by removing common prefixes/suffixes - simplified approach
     private func extractCoreFundName(_ name: String) -> String {
         var core = name
         
-        // Remove plan type suffixes - enhanced to handle more patterns from API data
-        let planSuffixes = [
-            "direct growth", "growth", "direct plan growth", "plan growth", "regular plan growth",
-            "dividend", "idcw", "regular growth", "regular plan", "growth plan",
-            "institutional plan", "pf plan", "super institutional plan", "premium plan",
-            "composite plan", "treasury plan", "plan a", "plan b", "plan c"
-        ]
-        for suffix in planSuffixes {
-            if core.hasSuffix(suffix) {
-                core = String(core.dropLast(suffix.count)).trimmingCharacters(in: .whitespaces)
-                break
-            }
-        }
-        
+        // Simplified: Remove only basic keywords and punctuation (already done in normalization)
         // Remove fund type suffixes
         let fundSuffixes = ["fund", "scheme"]
         for suffix in fundSuffixes {
