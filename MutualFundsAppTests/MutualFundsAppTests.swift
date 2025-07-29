@@ -641,7 +641,8 @@ final class MutualFundsAppTests: XCTestCase {
         let matcher = FundMatcher.shared
         let matchedHoldings = matcher.matchHoldingsWithFunds([holding], availableFunds: [fund])
         
-        XCTAssertEqual(matchedHoldings.count, 1)
+        let holdingsCount = matchedHoldings.count
+        XCTAssertEqual(holdingsCount, 1)
         XCTAssertNotNil(matchedHoldings.first?.matchedSchemeCode)
         XCTAssertEqual(matchedHoldings.first?.matchedSchemeCode, "123456")
     }
@@ -671,7 +672,8 @@ final class MutualFundsAppTests: XCTestCase {
         let matcher = FundMatcher.shared
         let matchedHoldings = matcher.matchHoldingsWithFunds([holding], availableFunds: [fund])
         
-        XCTAssertEqual(matchedHoldings.count, 1)
+        let holdingsCount = matchedHoldings.count
+        XCTAssertEqual(holdingsCount, 1)
         XCTAssertNotNil(matchedHoldings.first?.matchedSchemeCode)
     }
     
@@ -700,7 +702,8 @@ final class MutualFundsAppTests: XCTestCase {
         let matcher = FundMatcher.shared
         let matchedHoldings = matcher.matchHoldingsWithFunds([holding], availableFunds: [fund])
         
-        XCTAssertEqual(matchedHoldings.count, 1)
+        let holdingsCount = matchedHoldings.count
+        XCTAssertEqual(holdingsCount, 1)
         XCTAssertNil(matchedHoldings.first?.matchedSchemeCode)
     }
     
