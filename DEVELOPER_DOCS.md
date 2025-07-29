@@ -133,11 +133,16 @@ The app uses a sophisticated multi-factor matching system in `FundMatcher.swift`
 - **Combined Direct Growth**: +10% total bonus
 
 **Matching Process:**
-1. Normalize fund names (remove dashes, standardize terms)
-2. Extract core fund names (remove plan suffixes)
+1. Normalize fund names (remove dashes, standardize terms, filter plan patterns)
+2. Extract core fund names (remove plan suffixes including "Regular Plan", "Growth Plan", "PF Plan", etc.)
 3. Calculate multi-factor similarity scores
 4. Apply plan type and category bonuses
 5. Select best match above 70% threshold
+
+**Enhanced Plan Pattern Removal (July 2025):**
+- **Normalization**: Removes common plan patterns like "Regular Plan", "Growth Plan", "Institutional Plan", "PF Plan", "Premium Plan", "Composite Plan", "Treasury Plan", "Plan A/B/C"
+- **Core Name Extraction**: Enhanced to handle comprehensive plan suffix patterns found in API data
+- **Improved Matching**: Better accuracy by focusing on core fund names without plan noise
 
 ### Performance Optimization
 - Lazy loading of fund details
@@ -178,8 +183,11 @@ class AppSettings: ObservableObject {
 - **Real-time Filtering**: Changes immediately affect fund listings and portfolio matching
 
 ### Dividend Fund Filtering
-- **Default Behavior**: Dividend/IDCW funds are hidden by default for better UX
-- **Detection Logic**: Uses `MutualFund.isDividendPlan` property (checks for "dividend" or "idcw" in scheme name)
+- **Default Behavior**: Non-Growth funds are hidden by default for better UX
+- **Enhanced Detection Logic (July 2025)**: Uses `MutualFund.isDividendPlan` property - **filters out ALL funds that don't contain "Growth" in scheme name**
+  - **Previous Logic**: Only filtered funds containing "dividend" or "idcw"
+  - **Current Logic**: Treats everything that isn't explicitly "Growth" as dividend/non-growth
+  - **Impact**: Much more aggressive filtering - only Growth funds are shown when dividend filter is active
 - **Integration Points**: 
   - `FundsViewModel.filterFunds()` - Filters fund listings
   - `FundMatcher.matchHoldingsWithFunds()` - Respects filter in portfolio matching

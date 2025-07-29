@@ -408,6 +408,17 @@ class FundMatcher: ObservableObject {
             normalized = normalized.replacingOccurrences(of: old, with: new)
         }
         
+        // Remove common plan type patterns that add noise to matching
+        let planPatterns = [
+            "regular plan", "growth plan", "institutional plan", "pf plan",
+            "super institutional plan", "premium plan", "composite plan",
+            "treasury plan", "plan a", "plan b", "plan c"
+        ]
+        
+        for pattern in planPatterns {
+            normalized = normalized.replacingOccurrences(of: pattern, with: "")
+        }
+        
         // Remove common suffixes/prefixes that might cause mismatches
         let wordsToRemove = ["plan", "scheme", "-", "(", ")", "[", "]"]
         for word in wordsToRemove {
@@ -524,9 +535,13 @@ class FundMatcher: ObservableObject {
     private func extractCoreFundName(_ name: String) -> String {
         var core = name
         
-        // Remove plan type suffixes
-        let planSuffixes = ["direct growth", "growth", "direct plan growth", "plan growth", 
-                           "dividend", "idcw", "regular growth", "regular plan growth"]
+        // Remove plan type suffixes - enhanced to handle more patterns from API data
+        let planSuffixes = [
+            "direct growth", "growth", "direct plan growth", "plan growth", "regular plan growth",
+            "dividend", "idcw", "regular growth", "regular plan", "growth plan",
+            "institutional plan", "pf plan", "super institutional plan", "premium plan",
+            "composite plan", "treasury plan", "plan a", "plan b", "plan c"
+        ]
         for suffix in planSuffixes {
             if core.hasSuffix(suffix) {
                 core = String(core.dropLast(suffix.count)).trimmingCharacters(in: .whitespaces)

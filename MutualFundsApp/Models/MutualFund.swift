@@ -54,8 +54,9 @@ struct MutualFund: Codable, Identifiable, Hashable {
     }
     
     var isDividendPlan: Bool {
-        return schemeName.lowercased().contains("dividend") || 
-               schemeName.lowercased().contains("idcw")
+        // Filter out all funds that aren't explicitly Growth funds
+        // This treats everything that isn't "Growth" as dividend/non-growth
+        return !schemeName.lowercased().contains("growth")
     }
     
     var isDirectPlan: Bool {
