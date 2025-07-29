@@ -3,6 +3,20 @@ import Foundation
 class FundMatcher: ObservableObject {
     static let shared = FundMatcher()
     
+    // Performance optimization: Cache preprocessing results
+    private var fundPreprocessingCache: [String: PreprocessedFund] = [:]
+    private var amcLookupIndex: [String: [MutualFund]] = [:]
+    private var normalizedNameCache: [String: String] = [:]
+    private var similarityScoreCache: [String: Double] = [:]
+    
+    private struct PreprocessedFund {
+        let fund: MutualFund
+        let normalizedName: String
+        let normalizedAMC: String
+        let coreName: String
+        let keyTerms: Set<String>
+    }
+    
     private init() {}
     
     // Match holding names with API fund data
