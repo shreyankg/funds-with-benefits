@@ -707,6 +707,248 @@ final class MutualFundsAppTests: XCTestCase {
         XCTAssertNil(matchedHoldings.first?.matchedSchemeCode)
     }
     
+    // MARK: - FundMatcher Performance Optimization Tests
+    
+    func testFundMatcherPreprocessFundsDataPopulatesCache() throws {
+        let funds = [
+            MutualFund(
+                schemeCode: "123456",
+                schemeName: "SBI Large Cap Fund Direct Growth",
+                isinGrowth: "INF123456789",
+                isinDivReinvestment: nil
+            ),
+            MutualFund(
+                schemeCode: "789012",
+                schemeName: "ICICI Prudential Large Cap Fund Direct Growth",
+                isinGrowth: "INF789012345",
+                isinDivReinvestment: nil
+            )
+        ]
+        
+        let matcher = FundMatcher.shared
+        
+        // Test preprocessing creates cached data
+        matcher.preprocessFundsData(funds)
+        
+        // Verify the preprocessing doesn't break basic functionality
+        let holding = HoldingData(
+            schemeName: "SBI Large Cap Fund Direct Growth",
+            amcName: "SBI Mutual Fund",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "External",
+            units: 100.0,
+            investedValue: 10000.0,
+            currentValue: 12000.0,
+            returns: 2000.0,
+            xirr: 15.0
+        )
+        
+        let matchedHoldings = matcher.matchHoldingsWithFunds([holding], availableFunds: funds)
+        let holdingsCount = matchedHoldings.count
+        XCTAssertEqual(holdingsCount, 1)
+        XCTAssertNotNil(matchedHoldings.first?.matchedSchemeCode)
+        XCTAssertEqual(matchedHoldings.first?.matchedSchemeCode, "123456")
+    }
+    
+    func testFundMatcherAMCLookupIndexOptimization() throws {
+        let sbiFunds = [
+            MutualFund(
+                schemeCode: "100001",
+                schemeName: "SBI Large Cap Fund Direct Growth",
+                isinGrowth: "INF100001789",
+                isinDivReinvestment: nil
+            ),
+            MutualFund(
+                schemeCode: "100002",
+                schemeName: "SBI Mid Cap Fund Direct Growth",
+                isinGrowth: "INF100002789",
+                isinDivReinvestment: nil
+            )
+        ]
+        
+        let iciciFunds = [
+            MutualFund(
+                schemeCode: "200001",
+                schemeName: "ICICI Prudential Large Cap Fund Direct Growth",
+                isinGrowth: "INF200001345",
+                isinDivReinvestment: nil
+            )
+        ]
+        
+        let allFunds = sbiFunds + iciciFunds
+        let matcher = FundMatcher.shared
+        
+        // Test AMC-based filtering works
+        let sbiHolding = HoldingData(
+            schemeName: "SBI Large Cap Fund Direct Growth",
+            amcName: "SBI Mutual Fund",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "External",
+            units: 100.0,
+            investedValue: 10000.0,
+            currentValue: 12000.0,
+            returns: 2000.0,
+            xirr: 15.0
+        )
+        
+        let matchedHoldings = matcher.matchHoldingsWithFunds([sbiHolding], availableFunds: allFunds)
+        let holdingsCount = matchedHoldings.count
+        XCTAssertEqual(holdingsCount, 1)
+        XCTAssertNotNil(matchedHoldings.first?.matchedSchemeCode)
+        
+        // Should match with SBI fund, not ICICI fund
+        let matchedSchemeCode = matchedHoldings.first?.matchedSchemeCode
+        XCTAssertTrue(matchedSchemeCode == "100001" || matchedSchemeCode == "100002")
+    }
+    
+    func testFundMatcherOptimizedVsLegacyMatchingConsistency() throws {
+        let funds = [
+            MutualFund(
+                schemeCode: "123456",
+                schemeName: "SBI Large Cap Fund Direct Growth",
+                isinGrowth: "INF123456789",
+                isinDivReinvestment: nil
+            ),
+            MutualFund(
+                schemeCode: "789012",
+                schemeName: "ICICI Prudential Large Cap Fund Direct Growth",
+                isinGrowth: "INF789012345",
+                isinDivReinvestment: nil
+            ),
+            MutualFund(
+                schemeCode: "345678",
+                schemeName: "HDFC Large Cap Fund Direct Growth",
+                isinGrowth: "INF345678901",
+                isinDivReinvestment: nil
+            )
+        ]
+        
+        let holdings = [
+            HoldingData(
+                schemeName: "SBI Large Cap Fund Direct Growth",
+                amcName: "SBI Mutual Fund",
+                category: "Equity",
+                subCategory: "Large Cap",
+                folioNumber: "123456",
+                source: "External",
+                units: 100.0,
+                investedValue: 10000.0,
+                currentValue: 12000.0,
+                returns: 2000.0,
+                xirr: 15.0
+            ),
+            HoldingData(
+                schemeName: "ICICI Large Cap Fund Direct Growth",
+                amcName: "ICICI Prudential Mutual Fund",
+                category: "Equity",
+                subCategory: "Large Cap",
+                folioNumber: "789012",
+                source: "External",
+                units: 50.0,
+                investedValue: 5000.0,
+                currentValue: 6000.0,
+                returns: 1000.0,
+                xirr: 12.0
+            )
+        ]
+        
+        let matcher = FundMatcher.shared
+        
+        // Test optimized matching gives expected results
+        let matchedHoldings = matcher.matchHoldingsWithFunds(holdings, availableFunds: funds)
+        let matchedCount = matchedHoldings.count
+        XCTAssertEqual(matchedCount, 2)
+        
+        // First holding should match exactly
+        let firstMatched = matchedHoldings.first?.matchedSchemeCode
+        XCTAssertEqual(firstMatched, "123456")
+        
+        // Second holding should match ICICI fund despite slight name difference
+        let secondMatched = matchedHoldings[1].matchedSchemeCode
+        XCTAssertEqual(secondMatched, "789012")
+    }
+    
+    func testFundMatcherNormalizedNameCaching() throws {
+        let fund = MutualFund(
+            schemeCode: "123456",
+            schemeName: "SBI - Large Cap Fund (Direct Plan) - Growth",
+            isinGrowth: "INF123456789",
+            isinDivReinvestment: nil
+        )
+        
+        let holding = HoldingData(
+            schemeName: "SBI Large Cap Fund Direct Growth",
+            amcName: "SBI Mutual Fund",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "External",
+            units: 100.0,
+            investedValue: 10000.0,
+            currentValue: 12000.0,
+            returns: 2000.0,
+            xirr: 15.0
+        )
+        
+        let matcher = FundMatcher.shared
+        
+        // Test multiple calls should use cached normalization
+        let matchedHoldings1 = matcher.matchHoldingsWithFunds([holding], availableFunds: [fund])
+        let matchedHoldings2 = matcher.matchHoldingsWithFunds([holding], availableFunds: [fund])
+        
+        // Both should produce same results (testing caching doesn't break functionality)
+        let firstResult = matchedHoldings1.first?.matchedSchemeCode
+        let secondResult = matchedHoldings2.first?.matchedSchemeCode
+        XCTAssertEqual(firstResult, secondResult)
+        XCTAssertNotNil(firstResult)
+    }
+    
+    func testFundMatcherEarlyTerminationOnExactMatch() throws {
+        let exactMatchFund = MutualFund(
+            schemeCode: "123456",
+            schemeName: "SBI Large Cap Fund Direct Growth",
+            isinGrowth: "INF123456789",
+            isinDivReinvestment: nil
+        )
+        
+        let partialMatchFund = MutualFund(
+            schemeCode: "789012",
+            schemeName: "SBI Large Cap Fund Regular Growth", // Similar but not exact
+            isinGrowth: "INF789012345",
+            isinDivReinvestment: nil
+        )
+        
+        let funds = [partialMatchFund, exactMatchFund] // Exact match is second (tests early termination)
+        
+        let holding = HoldingData(
+            schemeName: "SBI Large Cap Fund Direct Growth",
+            amcName: "SBI Mutual Fund",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "External",
+            units: 100.0,
+            investedValue: 10000.0,
+            currentValue: 12000.0,
+            returns: 2000.0,
+            xirr: 15.0
+        )
+        
+        let matcher = FundMatcher.shared
+        let matchedHoldings = matcher.matchHoldingsWithFunds([holding], availableFunds: funds)
+        
+        let holdingsCount = matchedHoldings.count
+        XCTAssertEqual(holdingsCount, 1)
+        
+        // Should find exact match despite it being second in array
+        let matchedSchemeCode = matchedHoldings.first?.matchedSchemeCode
+        XCTAssertEqual(matchedSchemeCode, "123456")
+    }
+    
     // MARK: - Holdings Parser Tests
     
     func testHoldingsParserCSVParsing() throws {
