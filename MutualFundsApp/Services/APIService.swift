@@ -1,6 +1,31 @@
 import Foundation
 import Combine
 
+// Temporary inline AppSettings until we add the separate file to Xcode project
+class AppSettings: ObservableObject {
+    static let shared = AppSettings()
+    
+    @Published var showDividendFunds: Bool {
+        didSet {
+            UserDefaults.standard.set(showDividendFunds, forKey: "showDividendFunds")
+        }
+    }
+    
+    private init() {
+        // Default to false (dividend funds hidden by default)
+        self.showDividendFunds = UserDefaults.standard.object(forKey: "showDividendFunds") as? Bool ?? false
+    }
+    
+    // Helper method to get filtered funds based on settings
+    func filteredFunds(_ funds: [MutualFund]) -> [MutualFund] {
+        if showDividendFunds {
+            return funds
+        } else {
+            return funds.filter { !$0.isDividendPlan }
+        }
+    }
+}
+
 class APIService: ObservableObject {
     static let shared = APIService()
     
@@ -104,12 +129,23 @@ class FundsViewModel: ObservableObject {
     @Published var errorMessage: String?
     
     private let apiService = APIService.shared
+    private let appSettings = AppSettings.shared
     
     let categories = ["All", "Equity", "Debt", "Hybrid", "Other"]
     
     init() {
         loadFunds()
+        
+        // Listen to settings changes to re-filter funds
+        appSettings.$showDividendFunds
+            .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
+            .sink { [weak self] (showDividendFunds: Bool) in
+                self?.filterFunds()
+            }
+            .store(in: &cancellables)
     }
+    
+    private var cancellables = Set<AnyCancellable>()
     
     func loadFunds() {
         isLoading = true
@@ -131,6 +167,9 @@ class FundsViewModel: ObservableObject {
     private func filterFunds() {
         var filtered = funds
         
+        // Apply dividend fund filtering based on settings
+        filtered = appSettings.filteredFunds(filtered)
+        
         if !searchText.isEmpty {
             filtered = filtered.filter { fund in
                 fund.schemeName.localizedCaseInsensitiveContains(searchText) ||
@@ -143,6 +182,8 @@ class FundsViewModel: ObservableObject {
             filtered = filtered.filter { $0.category == selectedCategory }
         }
         
+        // Explicitly notify observers that the filtered funds are about to change
+        objectWillChange.send()
         filteredFunds = filtered
     }
     

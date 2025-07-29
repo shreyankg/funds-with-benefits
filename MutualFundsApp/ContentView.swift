@@ -1,5 +1,78 @@
 import SwiftUI
 
+// Temporary inline SettingsView until we add the separate file to Xcode project
+struct SettingsView: View {
+    @StateObject private var settings = AppSettings.shared
+    
+    var body: some View {
+        NavigationView {
+            List {
+                Section {
+                    HStack {
+                        Image(systemName: "eye.slash.circle.fill")
+                            .foregroundColor(.orange)
+                            .font(.title2)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Show Dividend Funds")
+                                .font(.headline)
+                            Text("Include dividend/IDCW funds in listings and matching")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        Toggle("", isOn: $settings.showDividendFunds)
+                    }
+                    .padding(.vertical, 4)
+                } header: {
+                    Text("Fund Display")
+                } footer: {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("When disabled, dividend/IDCW funds are hidden from the funds list and excluded from portfolio matching.")
+                        
+                        if !settings.showDividendFunds {
+                            Text("✓ Dividend funds are currently hidden")
+                                .foregroundColor(.green)
+                                .font(.caption)
+                        } else {
+                            Text("⚠️ All funds including dividend plans are visible")
+                                .foregroundColor(.orange)
+                                .font(.caption)
+                        }
+                    }
+                }
+                
+                Section {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Image(systemName: "info.circle.fill")
+                                .foregroundColor(.blue)
+                            Text("About Dividend Funds")
+                                .font(.headline)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("• **Dividend plans** distribute profits periodically to investors")
+                            Text("• **Growth plans** reinvest profits, leading to NAV appreciation")
+                            Text("• Most investors prefer Growth plans for better tax efficiency")
+                            Text("• Dividend distributions are subject to tax implications")
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 8)
+                } header: {
+                    Text("Information")
+                }
+                
+            }
+            .navigationTitle("Settings")
+        }
+    }
+}
+
 struct ContentView: View {
     var body: some View {
         TabView {
@@ -13,6 +86,12 @@ struct ContentView: View {
                 .tabItem {
                     Image(systemName: "briefcase.fill")
                     Text("Portfolio")
+                }
+            
+            SettingsView()
+                .tabItem {
+                    Image(systemName: "gearshape.fill")
+                    Text("Settings")
                 }
             
             AboutView()

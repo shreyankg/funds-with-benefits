@@ -2,6 +2,7 @@ import SwiftUI
 
 struct FundsListView: View {
     @StateObject private var viewModel = FundsViewModel()
+    @ObservedObject private var appSettings = AppSettings.shared
     @State private var showingCategories = false
     
     var body: some View {

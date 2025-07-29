@@ -9,6 +9,8 @@ class FundMatcher: ObservableObject {
     private var normalizedNameCache: [String: String] = [:]
     private var similarityScoreCache: [String: Double] = [:]
     
+    private let appSettings = AppSettings.shared
+    
     private struct PreprocessedFund {
         let fund: MutualFund
         let normalizedName: String
@@ -21,10 +23,13 @@ class FundMatcher: ObservableObject {
     
     // Match holding names with API fund data
     func matchHoldingsWithFunds(_ holdings: [HoldingData], availableFunds: [MutualFund]) -> [HoldingData] {
+        // Filter funds based on app settings (dividend fund filter)
+        let enabledFunds = appSettings.filteredFunds(availableFunds)
+        
         var matchedHoldings: [HoldingData] = []
         
         for holding in holdings {
-            let matchedSchemeCode = findBestMatch(for: holding, in: availableFunds)
+            let matchedSchemeCode = findBestMatch(for: holding, in: enabledFunds)
             
             var updatedHolding = holding
             if let schemeCode = matchedSchemeCode {

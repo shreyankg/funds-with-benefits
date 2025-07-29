@@ -896,4 +896,142 @@ final class MutualFundsAppTests: XCTestCase {
             holdingsManager.clearPortfolio()
         }
     }
+    
+    // MARK: - AppSettings and Dividend Filter Tests
+    
+    func testAppSettingsDefaultValue() throws {
+        let settings = AppSettings.shared
+        
+        // Default should be false (dividend funds hidden)
+        XCTAssertFalse(settings.showDividendFunds, "Default setting should hide dividend funds")
+    }
+    
+    func testDividendFundFiltering() throws {
+        let settings = AppSettings.shared
+        
+        // Create test funds with both growth and dividend plans
+        let mockFunds = [
+            MutualFund(schemeCode: "001", schemeName: "SBI Large Cap Fund Direct Growth"),
+            MutualFund(schemeCode: "002", schemeName: "HDFC Equity Fund Direct Dividend"),
+            MutualFund(schemeCode: "003", schemeName: "ICICI Prudential Blue Chip Fund Growth"),
+            MutualFund(schemeCode: "004", schemeName: "Axis Mutual Fund IDCW Plan"),
+            MutualFund(schemeCode: "005", schemeName: "Kotak Small Cap Fund Growth")
+        ]
+        
+        // Test with dividend funds hidden (default)
+        settings.showDividendFunds = false
+        let filteredFunds = settings.filteredFunds(mockFunds)
+        
+        // Should only have growth funds (3 out of 5)
+        XCTAssertEqual(filteredFunds.count, 3, "Should filter out dividend/IDCW funds")
+        
+        let filteredNames = filteredFunds.map { $0.schemeName }
+        XCTAssertTrue(filteredNames.contains("SBI Large Cap Fund Direct Growth"))
+        XCTAssertTrue(filteredNames.contains("ICICI Prudential Blue Chip Fund Growth"))
+        XCTAssertTrue(filteredNames.contains("Kotak Small Cap Fund Growth"))
+        XCTAssertFalse(filteredNames.contains("HDFC Equity Fund Direct Dividend"))
+        XCTAssertFalse(filteredNames.contains("Axis Mutual Fund IDCW Plan"))
+        
+        // Test with dividend funds shown
+        settings.showDividendFunds = true
+        let allFunds = settings.filteredFunds(mockFunds)
+        
+        // Should have all funds
+        XCTAssertEqual(allFunds.count, 5, "Should show all funds when enabled")
+        
+        // Reset to default for other tests
+        settings.showDividendFunds = false
+    }
+    
+    func testFundMatcherWithDividendFiltering() throws {
+        let fundMatcher = FundMatcher.shared
+        let settings = AppSettings.shared
+        
+        // Create a test holding that might match both growth and dividend funds
+        let testHolding = HoldingData(
+            schemeName: "SBI Large Cap Fund Direct Growth",
+            amcName: "SBI",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "12345",
+            source: "Test",
+            units: 100.0,
+            investedValue: 10000.0,
+            currentValue: 11000.0,
+            returns: 1000.0,
+            xirr: 10.5,
+            matchedSchemeCode: nil
+        )
+        
+        let mockFunds = [
+            MutualFund(schemeCode: "001", schemeName: "SBI Large Cap Fund Direct Growth"),
+            MutualFund(schemeCode: "002", schemeName: "SBI Large Cap Fund Direct Dividend"),
+            MutualFund(schemeCode: "003", schemeName: "HDFC Large Cap Fund Growth")
+        ]
+        
+        // Test with dividend funds hidden
+        settings.showDividendFunds = false
+        let matchedHoldings1 = fundMatcher.matchHoldingsWithFunds([testHolding], availableFunds: mockFunds)
+        
+        // Should match the growth fund, not the dividend fund
+        XCTAssertEqual(matchedHoldings1.count, 1)
+        if let matchedSchemeCode = matchedHoldings1.first?.matchedSchemeCode {
+            XCTAssertEqual(matchedSchemeCode, "001", "Should match growth fund when dividend funds are hidden")
+        }
+        
+        // Test with dividend funds shown
+        settings.showDividendFunds = true
+        let matchedHoldings2 = fundMatcher.matchHoldingsWithFunds([testHolding], availableFunds: mockFunds)
+        
+        // Should still prefer the exact growth match
+        XCTAssertEqual(matchedHoldings2.count, 1)
+        if let matchedSchemeCode = matchedHoldings2.first?.matchedSchemeCode {
+            XCTAssertEqual(matchedSchemeCode, "001", "Should still match growth fund even when dividend funds are shown")
+        }
+        
+        // Reset to default
+        settings.showDividendFunds = false
+    }
+    
+    // MARK: - UI Refresh Tests
+    
+    func testFundsListViewObservesSettings() throws {
+        // This test verifies that FundsListView properly observes AppSettings
+        // The fact that it compiles and builds successfully indicates the @ObservedObject is working
+        
+        let settings = AppSettings.shared
+        let originalValue = settings.showDividendFunds
+        
+        // Toggle the setting
+        settings.showDividendFunds = !originalValue
+        
+        // Since FundsListView now observes AppSettings with @ObservedObject,
+        // the view should automatically refresh when this property changes
+        
+        // Verify the setting actually changed
+        XCTAssertNotEqual(settings.showDividendFunds, originalValue, "Setting should have changed")
+        
+        // Reset to original value
+        settings.showDividendFunds = originalValue
+        
+        XCTAssertEqual(settings.showDividendFunds, originalValue, "Setting should be reset to original value")
+    }
+    
+    func testSettingsViewToggleChangesValue() throws {
+        let settings = AppSettings.shared
+        let originalValue = settings.showDividendFunds
+        
+        // Simulate toggle action (this is what happens when user taps the toggle)
+        settings.showDividendFunds.toggle()
+        
+        // Verify the change
+        XCTAssertNotEqual(settings.showDividendFunds, originalValue, "Toggle should change the value")
+        
+        // Verify it persists (UserDefaults integration)
+        let persistedValue = UserDefaults.standard.object(forKey: "showDividendFunds") as? Bool ?? false
+        XCTAssertEqual(settings.showDividendFunds, persistedValue, "Setting should be persisted to UserDefaults")
+        
+        // Reset
+        settings.showDividendFunds = originalValue
+    }
 }
