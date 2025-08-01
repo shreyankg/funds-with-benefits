@@ -6,7 +6,7 @@ A comprehensive iOS app for tracking and analyzing Indian mutual funds using rea
 
 ### 📊 **Fund Discovery**
 - Complete list of Indian mutual funds
-- Real-time search by fund name, scheme code, or fund house
+- Real-time search by fund name or scheme code
 - Category-based filtering (Equity, Debt, Hybrid, Other)
 - Growth and Dividend plan identification
 
@@ -18,12 +18,12 @@ A comprehensive iOS app for tracking and analyzing Indian mutual funds using rea
 
 ### 🎯 **Detailed Fund Information**
 - Current NAV with daily change indicators
-- Fund house and category information
+- Category information
 - ISIN codes for growth and dividend plans
 - Historical performance metrics
 
 ### 🔍 **Smart Search & Filters**
-- Instant search across fund names, codes, and fund houses
+- Instant search across fund names and codes
 - Category filters for focused browsing
 - Dividend fund filter (hide/show dividend/IDCW plans)
 - Responsive and intuitive user interface
@@ -82,7 +82,7 @@ FundsWithBenefitsApp/
 
 ### 🔍 **Search & Filtering**
 - Debounced search to minimize API calls
-- Multi-criteria filtering (name, code, fund house, category)
+- Multi-criteria filtering (name, code, category)
 - Real-time results with smooth animations
 
 ### 📊 **Performance Charts**
@@ -103,7 +103,7 @@ This app uses the [MF API (api.mfapi.in)](https://api.mfapi.in/mf) which provide
 
 - **Fund List**: Complete catalog of Indian mutual funds
 - **Historical Data**: Daily NAV history for performance analysis
-- **Fund Metadata**: Fund house, category, and scheme information
+- **Fund Metadata**: Category and scheme information
 - **Real-time Updates**: Latest NAV values and daily changes
 
 ## Performance Metrics

@@ -54,7 +54,7 @@ struct SearchBar: View {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.secondary)
             
-            TextField("Search funds, codes, or fund houses", text: $text)
+            TextField("Search funds or codes", text: $text)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
         }
     }
@@ -103,11 +103,7 @@ struct FundRowView: View {
                     Text(fund.schemeName)
                         .font(.headline)
                         .foregroundColor(.primary)
-                        .lineLimit(2)
-                    
-                    Text(fund.fundHouse)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .lineLimit(3)
                 }
                 
                 Spacer()

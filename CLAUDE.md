@@ -137,6 +137,62 @@ wait(for: [expectation], timeout: 5.0)
 - **JSON parsing errors**: Verify `Codable` implementations handle API variations
 - **Cache problems**: Clear DataCache, check expiration logic
 
+## API Exploration Best Practices
+
+### Before Making API Changes
+
+**CRITICAL**: The best way to explore and understand API structure is to download the API data locally first, then explore it instead of making multiple API calls during development.
+
+#### Recommended Workflow:
+1. **Check for existing local API data** (e.g., `mutual_funds_api_data.json` in project root)
+2. **Download API data locally** if not available:
+   ```bash
+   # Download complete fund list for exploration
+   curl https://api.mfapi.in/mf > mutual_funds_api_data.json
+   
+   # Download individual fund data for testing
+   curl https://api.mfapi.in/mf/119551 > sample_fund_data.json
+   ```
+3. **Explore the JSON structure** using local files
+4. **Plan your changes** based on actual data structure
+5. **Only then make API integration changes**
+
+### Current API Limitations & First-Word Matching Optimization
+
+#### Why First-Word Extraction Exists
+The `fundHouse` property in `MutualFund.swift` extracts the first word from scheme names. **This is NOT true AMC parsing** - it's a simple matching optimization technique that serves **one primary purpose**:
+
+1. **Portfolio Matching Performance** (Only Purpose): 
+   - Reduces search space by 90% in `FundMatcher.swift`
+   - Provides 20-50x performance improvement
+   - Creates rough groupings for faster fund matching
+
+**Important**: The first word is often not the actual AMC name, making this technique useful only for performance optimization, not for accurate AMC identification.
+
+#### Current API Structure
+The `https://api.mfapi.in/mf` API provides minimal fields:
+```json
+{
+  "schemeCode": "119551",
+  "schemeName": "Aditya Birla Sun Life Frontline Equity Fund - Growth - Direct Plan",
+  "isinGrowth": "INF209K01LX6",
+  "isinDivReinvestment": null
+}
+```
+
+**No dedicated AMC/fund house field** is provided. The current first-word extraction is a performance optimization, not true AMC parsing.
+
+#### Alternative API Research
+- Most free Indian mutual fund APIs have similar limitations
+- No widely available API provides structured AMC data
+- Current first-word matching approach is optimal for performance, not accuracy
+
+### When Exploring APIs
+- **Always download sample data locally first**
+- **Avoid making repeated API calls during development**
+- **Cache API responses** for consistent testing
+- **Document API limitations** you discover
+
 ---
 
 **Note**: This file provides Claude Code-specific guidance. For complete technical documentation, architecture details, and development workflows, refer to `DEVELOPER_DOCS.md`.

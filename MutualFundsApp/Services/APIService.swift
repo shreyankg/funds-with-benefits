@@ -173,8 +173,7 @@ class FundsViewModel: ObservableObject {
         if !searchText.isEmpty {
             filtered = filtered.filter { fund in
                 fund.schemeName.localizedCaseInsensitiveContains(searchText) ||
-                fund.schemeCode.localizedCaseInsensitiveContains(searchText) ||
-                fund.fundHouse.localizedCaseInsensitiveContains(searchText)
+                fund.schemeCode.localizedCaseInsensitiveContains(searchText)
             }
         }
         
