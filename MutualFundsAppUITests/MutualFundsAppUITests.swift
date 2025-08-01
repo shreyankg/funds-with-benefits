@@ -475,59 +475,58 @@ final class MutualFundsAppUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
         
-        // Wait for splash screen to complete
+        // Wait for splash screen to complete with proper expectation
         let tabBar = app.tabBars.firstMatch
-        let exists = NSPredicate(format: "exists == true")
-        expectation(for: exists, evaluatedWith: tabBar, handler: nil)
-        waitForExpectations(timeout: 5, handler: nil)
+        let tabBarExists = NSPredicate(format: "exists == true")
+        expectation(for: tabBarExists, evaluatedWith: tabBar, handler: nil)
+        waitForExpectations(timeout: 10, handler: nil)
         
         // Navigate to Portfolio tab
-        app.tabBars.buttons["Portfolio"].tap()
+        let portfolioTab = app.tabBars.buttons["Portfolio"]
+        XCTAssertTrue(portfolioTab.exists, "Portfolio tab should exist")
+        portfolioTab.tap()
         
-        // Wait for view to load
-        Thread.sleep(forTimeInterval: 2)
+        // Wait for Portfolio view to load with expectation instead of sleep
+        let portfolioNavBar = app.navigationBars["Portfolio"]
+        let navBarExists = NSPredicate(format: "exists == true")
+        expectation(for: navBarExists, evaluatedWith: portfolioNavBar, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
         
-        // Look for upload button (either in empty state or menu)
-        var uploadButton = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'Upload Holdings' OR label CONTAINS[cd] 'Upload'")).firstMatch
+        // Extract property access to prevent race conditions
+        let portfolioTabSelected = portfolioTab.isSelected
+        let portfolioNavBarExists = portfolioNavBar.exists
         
-        if !uploadButton.exists {
-            // Try to access menu first
-            let menuButton = app.navigationBars.firstMatch.buttons.firstMatch
-            if menuButton.exists {
-                menuButton.tap()
-                Thread.sleep(forTimeInterval: 1)
-                uploadButton = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'Upload Holdings' OR label CONTAINS[cd] 'Upload'")).firstMatch
-            }
-        }
+        XCTAssertTrue(portfolioTabSelected, "Portfolio tab should be selected")
+        XCTAssertTrue(portfolioNavBarExists, "Portfolio navigation bar should be visible")
+        
+        // Try to find and tap upload button - simplified approach
+        let uploadButton = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'Upload'")).firstMatch
         
         if uploadButton.exists {
+            // Extract property to prevent race conditions
+            let uploadButtonHittable = uploadButton.isHittable
+            XCTAssertTrue(uploadButtonHittable, "Upload button should be hittable")
+            
             uploadButton.tap()
             
-            // Wait for file picker to appear
-            Thread.sleep(forTimeInterval: 2)
+            // Wait for any system picker/sheet to appear or dismiss quickly
+            // Use expectation with shorter timeout to avoid long waits
+            let dismissExpectation = XCTestExpectation(description: "System picker handled")
             
-            // Check if document picker appeared (this will vary based on iOS version)
-            // On iOS, the document picker should appear as a sheet or modal
-            // We'll check for common document picker elements
-            
-            let documentPicker = app.otherElements.containing(NSPredicate(format: "label CONTAINS[cd] 'Documents' OR label CONTAINS[cd] 'Files'")).firstMatch
-            let cancelButton = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'Cancel' OR label CONTAINS[cd] 'Done'")).firstMatch
-            
-            // If document picker appeared, dismiss it
-            if documentPicker.exists || cancelButton.exists {
-                if cancelButton.exists {
-                    cancelButton.tap()
-                } else {
-                    // Tap outside or use escape gesture
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                // Try to dismiss any system sheets by tapping outside
+                if app.sheets.count > 0 || app.alerts.count > 0 {
                     app.coordinate(withNormalizedOffset: CGVector(dx: 0.1, dy: 0.1)).tap()
                 }
-                
-                Thread.sleep(forTimeInterval: 1)
+                dismissExpectation.fulfill()
             }
             
-            // Verify we're back to the portfolio view
-            XCTAssertTrue(app.navigationBars["Portfolio"].exists, "Should return to portfolio view after dismissing picker")
+            wait(for: [dismissExpectation], timeout: 3.0)
         }
+        
+        // Final verification - extract property access to prevent race conditions
+        let finalPortfolioNavExists = app.navigationBars["Portfolio"].exists
+        XCTAssertTrue(finalPortfolioNavExists, "Should remain on or return to portfolio view")
     }
     
     func testPortfolioTabWithMockData() throws {

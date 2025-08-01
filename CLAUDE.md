@@ -191,6 +191,22 @@ xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name
 - **Use focused test runs** (unit tests only) for faster feedback
 - **Fix one test at a time** before moving to others
 
+#### **CRITICAL: Concurrency Issues Only Appear in Full Suite Runs**
+**⚠️ IMPORTANT**: Don't assume concurrency/race condition fixes work by running select tests!
+
+- **Concurrency issues ONLY manifest** when running the complete test suite
+- **Individual or small test subsets** will appear to pass even with race conditions
+- **Always verify fixes** by running the entire suite (one suite at a time):
+  ```bash
+  # ✅ CORRECT - Full unit test suite to verify concurrency fixes
+  xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' -only-testing:MutualFundsAppTests
+  
+  # ❌ WRONG - Individual tests won't show concurrency issues
+  xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' -only-testing:MutualFundsAppTests/testSpecificTest
+  ```
+- **Race conditions emerge** from test-to-test interactions, shared state, and parallel execution
+- **Debugging approach**: Run full suite → identify failing tests → debug individually → verify with full suite again
+
 ### Test Race Conditions (RESOLVED)
 If you encounter tests that pass individually but fail when run in parallel, this indicates a race condition or shared state issue. The FundMatcher tests previously had this issue.
 
