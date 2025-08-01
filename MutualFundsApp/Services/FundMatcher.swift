@@ -486,24 +486,80 @@ class FundMatcher: ObservableObject {
         return false
     }
     
-    // Check if plan types match
+    // Check if plan types match with intelligent inference for external funds
     private func matchesPlanType(holdingName: String, fundName: String) -> Bool {
         let holding = holdingName.lowercased()
         let fund = fundName.lowercased()
         
-        // Both should have same plan type
-        let planTypes = ["growth", "dividend", "idcw", "direct", "regular"]
+        // Infer plan types for both holding and fund
+        let holdingPlanType = inferPlanType(holding)
+        let fundPlanType = inferPlanType(fund)
         
-        for planType in planTypes {
-            let holdingHas = holding.contains(planType)
-            let fundHas = fund.contains(planType)
-            
-            if holdingHas != fundHas {
-                return false // Mismatch in plan type
+        // Check core plan type compatibility
+        return arePlanTypesCompatible(holdingPlanType, fundPlanType)
+    }
+    
+    // Infer plan type from fund name with intelligent defaults
+    private func inferPlanType(_ name: String) -> PlanType {
+        // Direct plan detection
+        if name.contains("direct") {
+            if name.contains("growth") {
+                return .directGrowth
+            } else if name.contains("dividend") || name.contains("idcw") {
+                return .directDividend
+            } else {
+                return .directGrowth // Default to growth for direct plans
             }
         }
         
-        return true // All plan types match or both don't have them
+        // Regular plan detection (explicit)
+        if name.contains("regular") {
+            if name.contains("growth") {
+                return .regularGrowth
+            } else if name.contains("dividend") || name.contains("idcw") {
+                return .regularDividend
+            } else {
+                return .regularGrowth // Default to growth for regular plans
+            }
+        }
+        
+        // For external funds without explicit plan indicators, infer based on growth/dividend
+        if name.contains("growth") {
+            return .regularGrowth // Assume Regular Growth for external funds
+        } else if name.contains("dividend") || name.contains("idcw") {
+            return .regularDividend // Assume Regular Dividend for external funds
+        }
+        
+        // Default case: assume Regular Growth for external funds without clear indicators
+        return .regularGrowth
+    }
+    
+    // Check if two plan types are compatible for matching
+    private func arePlanTypesCompatible(_ holdingPlan: PlanType, _ fundPlan: PlanType) -> Bool {
+        // Exact match is always compatible
+        if holdingPlan == fundPlan {
+            return true
+        }
+        
+        // Allow matching between inferred regular plans and explicit regular plans
+        // This handles cases where external funds don't specify "regular" but are regular plans
+        switch (holdingPlan, fundPlan) {
+        case (.regularGrowth, .regularGrowth),
+             (.regularDividend, .regularDividend),
+             (.directGrowth, .directGrowth),
+             (.directDividend, .directDividend):
+            return true
+        default:
+            return false
+        }
+    }
+    
+    // Plan type enumeration for better type safety
+    private enum PlanType {
+        case regularGrowth
+        case regularDividend
+        case directGrowth
+        case directDividend
     }
     
     // Enhanced fund name similarity calculation

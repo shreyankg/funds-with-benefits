@@ -1318,6 +1318,199 @@ final class MutualFundsAppTests: XCTestCase {
         settings.showDividendFunds = false
     }
     
+    // MARK: - Previously Unmatched Funds Tests (External Fund Plan Type Inference)
+    
+    func testFundMatcherPreviouslyUnmatchedExternalFunds() throws {
+        // Test all 5 previously unmatched external funds with plan type inference fix
+        let testCases = [
+            // Test case 1: Parag Parikh Conservative Hybrid Fund Growth
+            (
+                holding: HoldingData(
+                    schemeName: "Parag Parikh Conservative Hybrid Fund Growth",
+                    amcName: "PPFAS Mutual Fund",
+                    category: "Hybrid",
+                    subCategory: "Conservative Hybrid",
+                    folioNumber: "11059487",
+                    source: "External",
+                    units: 31294.977,
+                    investedValue: 312949.77,
+                    currentValue: 474003.11,
+                    returns: 161053.34,
+                    xirr: 10.73
+                ),
+                funds: [
+                    MutualFund(schemeCode: "148958", schemeName: "Parag Parikh Conservative Hybrid Fund - Direct Plan - Growth"),
+                    MutualFund(schemeCode: "148959", schemeName: "Parag Parikh Conservative Hybrid Fund - Regular Plan - Growth")
+                ],
+                expectedMatch: "148959",
+                description: "Parag Parikh Conservative Hybrid"
+            ),
+            
+            // Test case 2: Kotak Balanced Advantage Fund Growth
+            (
+                holding: HoldingData(
+                    schemeName: "Kotak Balanced Advantage Fund Growth",
+                    amcName: "Kotak Mahindra Mutual Fund",
+                    category: "Hybrid",
+                    subCategory: "Dynamic Asset Allocation",
+                    folioNumber: "6400657",
+                    source: "External",
+                    units: 10357.968,
+                    investedValue: 147216.97,
+                    currentValue: 212483.36,
+                    returns: 65266.39,
+                    xirr: 10.41
+                ),
+                funds: [
+                    MutualFund(schemeCode: "119551", schemeName: "Kotak Balanced Advantage Fund - Direct Plan - Growth"),
+                    MutualFund(schemeCode: "119552", schemeName: "Kotak Balanced Advantage Fund - Regular Plan - Growth")
+                ],
+                expectedMatch: "119552",
+                description: "Kotak Balanced Advantage"
+            ),
+            
+            // Test case 3: SBI Focused Fund Growth
+            (
+                holding: HoldingData(
+                    schemeName: "SBI Focused Fund Growth",
+                    amcName: "SBI Mutual Fund",
+                    category: "Equity",
+                    subCategory: "Focused",
+                    folioNumber: "22186788",
+                    source: "External",
+                    units: 528.530,
+                    investedValue: 74226.49,
+                    currentValue: 185502.51,
+                    returns: 111276.02,
+                    xirr: 15.8
+                ),
+                funds: [
+                    MutualFund(schemeCode: "119573", schemeName: "SBI FOCUSED FUND - DIRECT PLAN - GROWTH"),
+                    MutualFund(schemeCode: "119574", schemeName: "SBI FOCUSED FUND - REGULAR PLAN - GROWTH")
+                ],
+                expectedMatch: "119574",
+                description: "SBI Focused Fund"
+            ),
+            
+            // Test case 4: SBI Conservative Hybrid Fund Growth
+            (
+                holding: HoldingData(
+                    schemeName: "SBI Conservative Hybrid Fund Growth",
+                    amcName: "SBI Mutual Fund",
+                    category: "Hybrid",
+                    subCategory: "Conservative Hybrid",
+                    folioNumber: "22821659",
+                    source: "External",
+                    units: 2048.122,
+                    investedValue: 106252.03,
+                    currentValue: 149127.65,
+                    returns: 42875.62,
+                    xirr: 10.27
+                ),
+                funds: [
+                    MutualFund(schemeCode: "101001", schemeName: "SBI Conservative Hybrid Fund Direct Growth"),
+                    MutualFund(schemeCode: "101002", schemeName: "SBI Conservative Hybrid Fund Growth")
+                ],
+                expectedMatch: "101002",
+                description: "SBI Conservative Hybrid Fund"
+            ),
+            
+            // Test case 5: Axis ELSS Tax Saver Fund Growth
+            (
+                holding: HoldingData(
+                    schemeName: "Axis ELSS Tax Saver Fund Growth",
+                    amcName: "Axis Mutual Fund",
+                    category: "Equity",
+                    subCategory: "ELSS",
+                    folioNumber: "91068138491",
+                    source: "External",
+                    units: 435.789,
+                    investedValue: 30059.72,
+                    currentValue: 41963.34,
+                    returns: 11903.62,
+                    xirr: 9.67
+                ),
+                funds: [
+                    MutualFund(schemeCode: "120503", schemeName: "Axis ELSS Tax Saver Fund - Regular Plan - Growth"),
+                    MutualFund(schemeCode: "120504", schemeName: "Axis ELSS Tax Saver Fund - Direct Plan - Growth")
+                ],
+                expectedMatch: "120503",
+                description: "Axis ELSS Tax Saver Fund"
+            )
+        ]
+        
+        let matcher = FundMatcher.shared
+        
+        for (index, testCase) in testCases.enumerated() {
+            let matchedHoldings = matcher.matchHoldingsWithFunds([testCase.holding], availableFunds: testCase.funds)
+            
+            XCTAssertEqual(matchedHoldings.count, 1, "\(testCase.description): Should have one matched holding")
+            XCTAssertNotNil(matchedHoldings.first?.matchedSchemeCode, 
+                          "\(testCase.description): Should find a match with plan type inference")
+            XCTAssertEqual(matchedHoldings.first?.matchedSchemeCode, testCase.expectedMatch, 
+                         "\(testCase.description): Should match Regular Plan Growth for external fund without 'Direct'")
+        }
+    }
+    
+    func testFundMatcherPlanTypeInferenceLogic() throws {
+        // Test the plan type inference logic with various scenarios
+        let testCases = [
+            // Test case 1: External fund with "Growth" should infer Regular Growth
+            (
+                holding: HoldingData(
+                    schemeName: "Test Fund Growth",
+                    amcName: "Test AMC",
+                    category: "Equity",
+                    subCategory: "Large Cap",
+                    folioNumber: "12345",
+                    source: "External",
+                    units: 100.0,
+                    investedValue: 1000.0,
+                    currentValue: 1100.0,
+                    returns: 100.0,
+                    xirr: 10.0
+                ),
+                funds: [
+                    MutualFund(schemeCode: "TEST001", schemeName: "Test Fund - Regular Plan - Growth"),
+                    MutualFund(schemeCode: "TEST002", schemeName: "Test Fund - Direct Plan - Growth")
+                ],
+                expectedMatch: "TEST001"
+            ),
+            // Test case 2: External fund with "Direct Growth" should match Direct Growth
+            (
+                holding: HoldingData(
+                    schemeName: "Test Fund Direct Growth",
+                    amcName: "Test AMC",
+                    category: "Equity",
+                    subCategory: "Large Cap",
+                    folioNumber: "12346",
+                    source: "External",
+                    units: 100.0,
+                    investedValue: 1000.0,
+                    currentValue: 1100.0,
+                    returns: 100.0,
+                    xirr: 10.0
+                ),
+                funds: [
+                    MutualFund(schemeCode: "TEST001", schemeName: "Test Fund - Regular Plan - Growth"),
+                    MutualFund(schemeCode: "TEST002", schemeName: "Test Fund - Direct Plan - Growth")
+                ],
+                expectedMatch: "TEST002"
+            )
+        ]
+        
+        let matcher = FundMatcher.shared
+        
+        for (index, testCase) in testCases.enumerated() {
+            let matchedHoldings = matcher.matchHoldingsWithFunds([testCase.holding], availableFunds: testCase.funds)
+            
+            XCTAssertEqual(matchedHoldings.count, 1, "Test case \(index + 1): Should have one matched holding")
+            XCTAssertNotNil(matchedHoldings.first?.matchedSchemeCode, "Test case \(index + 1): Should find a match")
+            XCTAssertEqual(matchedHoldings.first?.matchedSchemeCode, testCase.expectedMatch, 
+                         "Test case \(index + 1): Should match expected scheme code")
+        }
+    }
+    
     // MARK: - UI Refresh Tests
     
     func testFundsListViewObservesSettings() throws {
