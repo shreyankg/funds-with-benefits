@@ -14,9 +14,43 @@ Funds with Benefits (FWB) is a SwiftUI iOS application for tracking and analyzin
 - **Clean Build**: `⌘+Shift+K` or Product → Clean Build Folder
 
 ### Testing
-- **Run All Tests**: `⌘+U` in Xcode or `xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest'`
-- **Run Unit Tests Only**: `xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' -only-testing:MutualFundsAppTests`
-- **Current Status**: ✅ All tests passing (38 unit tests, 14 UI tests)
+
+#### **Efficient Test Debugging Strategy**
+**CRITICAL**: Focus on ONE test type at a time for debugging. Avoid running all tests repeatedly without code changes.
+
+#### **Unit Tests (Recommended for debugging)**
+```bash
+# Unit tests with timeout and detailed output capture
+timeout 180 xcodebuild test -scheme MutualFundsApp \
+  -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+  -only-testing:MutualFundsAppTests 2>&1 | tee test_output.log
+
+# Extract failures and key info in one pass
+grep -E "(FAIL|PASS|Test Suite|Test Case|Assertion Failure|XCTAssert)" test_output.log
+```
+
+#### **UI Tests (Only when unit tests pass)**
+```bash
+# UI tests with timeout and output capture
+timeout 180 xcodebuild test -scheme MutualFundsApp \
+  -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+  -only-testing:MutualFundsAppUITests 2>&1 | tee ui_test_output.log
+
+# Extract UI test results
+grep -E "(FAIL|PASS|Test Suite|Test Case|UI Testing|Element)" ui_test_output.log
+```
+
+#### **All Tests (Only for final verification)**
+```bash
+# Complete test suite with comprehensive logging
+timeout 180 xcodebuild test -scheme MutualFundsApp \
+  -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' 2>&1 | tee full_test_output.log
+
+# Quick summary of results
+grep -E "(Test Suite.*started|Test Suite.*passed|Test Suite.*failed|FAIL|Test Case.*passed|Test Case.*failed)" full_test_output.log
+```
+
+#### **Current Status**: ✅ All tests passing (38 unit tests, 14 UI tests)
 
 ## Claude Code Specific Guidelines
 
@@ -77,19 +111,85 @@ Funds with Benefits (FWB) is a SwiftUI iOS application for tracking and analyzin
 - `ContentView.swift` - Main app navigation
 - `DEVELOPER_DOCS.md` - Complete technical documentation
 
-### Testing Commands
+### Testing Commands (Legacy - Use Testing section above for debugging)
 ```bash
-# Run all tests
-xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest'
-
-# Run only unit tests
-xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' -only-testing:MutualFundsAppTests
-
-# Run specific test
+# Run specific test (useful for isolated debugging)
 xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' -only-testing:MutualFundsAppTests/testFundMatcherExactMatch
+
+# Run specific test class
+xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' -only-testing:FundMatcherTests
 ```
 
 ## Testing Best Practices & Known Issues
+
+### **CRITICAL: Avoid Test Dependencies and Concurrency Issues**
+
+#### **When Writing/Updating Tests**
+1. **Test Isolation**: Each test MUST be completely independent
+   ```swift
+   // ❌ BAD - Relies on shared state
+   class MyTests: XCTestCase {
+       static var sharedData: [String] = []
+       
+       func testFirst() {
+           MyTests.sharedData.append("test1")
+           XCTAssertEqual(MyTests.sharedData.count, 1)
+       }
+   }
+   
+   // ✅ GOOD - Self-contained
+   class MyTests: XCTestCase {
+       func testFirst() {
+           let localData = ["test1"]
+           XCTAssertEqual(localData.count, 1)
+       }
+   }
+   ```
+
+2. **Avoid Shared Singletons**: Reset or mock singleton state in setUp/tearDown
+   ```swift
+   override func setUp() {
+       super.setUp()
+       // Reset any singleton state
+       DataCache.shared.clearAll()
+       FundMatcher.shared.clearCache()
+   }
+   ```
+
+3. **Async Test Patterns**: Use proper async/await patterns for MainActor classes
+   ```swift
+   // ✅ GOOD - Proper async testing
+   func testAsyncFunction() async throws {
+       let expectation = XCTestExpectation(description: "Async operation")
+       
+       Task {
+           await MainActor.run {
+               // Perform test operations
+               let result = await myAsyncFunction()
+               XCTAssertNotNil(result)
+           }
+           expectation.fulfill()
+       }
+       
+       await fulfillment(of: [expectation], timeout: 5.0)
+   }
+   ```
+
+4. **Race Condition Prevention**: Extract property access before assertions
+   ```swift
+   // ❌ BAD - Can cause race conditions
+   XCTAssertEqual(matchedHoldings.count, 1)
+   
+   // ✅ GOOD - Extract to local variable first
+   let holdingsCount = matchedHoldings.count
+   XCTAssertEqual(holdingsCount, 1)
+   ```
+
+#### **Test Debugging Rules**
+- **Never run the same test multiple times** without changing code
+- **Always capture full output** with `tee` commands above
+- **Use focused test runs** (unit tests only) for faster feedback
+- **Fix one test at a time** before moving to others
 
 ### Test Race Conditions (RESOLVED)
 If you encounter tests that pass individually but fail when run in parallel, this indicates a race condition or shared state issue. The FundMatcher tests previously had this issue.
