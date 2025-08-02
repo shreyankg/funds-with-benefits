@@ -27,6 +27,7 @@ struct FundDetailView: View {
                         data: viewModel.chartData,
                         selectedRange: viewModel.selectedTimeRange
                     )
+                    .frame(minHeight: 300, maxHeight: 600)
                     
                     if let performance = viewModel.currentPerformance {
                         PerformanceMetricsView(
@@ -138,66 +139,86 @@ struct PerformanceChartView: View {
     let selectedRange: TimeRange
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Performance Chart")
-                .font(.headline)
-            
-            if data.isEmpty {
-                Text("No data available for selected period")
-                    .foregroundColor(.secondary)
-                    .frame(height: 200)
-                    .frame(maxWidth: .infinity)
-            } else {
-                Chart(data) { navData in
-                    LineMark(
-                        x: .value("Date", navData.dateValue),
-                        y: .value("NAV", navData.navValue)
-                    )
-                    .foregroundStyle(.blue)
-                    .lineStyle(StrokeStyle(lineWidth: 2))
-                    
-                    AreaMark(
-                        x: .value("Date", navData.dateValue),
-                        y: .value("NAV", navData.navValue)
-                    )
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [.blue.opacity(0.3), .blue.opacity(0.1)],
-                            startPoint: .top,
-                            endPoint: .bottom
+        GeometryReader { geometry in
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Performance Chart")
+                    .font(.headline)
+                
+                if data.isEmpty {
+                    Text("No data available for selected period")
+                        .foregroundColor(.secondary)
+                        .frame(height: max(200, geometry.size.height * 0.6))
+                        .frame(maxWidth: .infinity)
+                } else {
+                    Chart(data) { navData in
+                        LineMark(
+                            x: .value("Date", navData.dateValue),
+                            y: .value("NAV", navData.navValue)
                         )
-                    )
-                }
-                .frame(height: 250)
-                .chartXAxis {
-                    AxisMarks(values: .stride(by: xAxisStride)) { value in
-                        AxisGridLine()
-                        AxisTick()
-                        AxisValueLabel {
-                            if let date = value.as(Date.self) {
-                                Text(formatXAxisDate(date))
-                                    .font(.caption)
+                        .foregroundStyle(.blue)
+                        .lineStyle(StrokeStyle(lineWidth: 2))
+                        
+                        AreaMark(
+                            x: .value("Date", navData.dateValue),
+                            y: .value("NAV", navData.navValue)
+                        )
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [.blue.opacity(0.3), .blue.opacity(0.1)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                    }
+                    .frame(height: max(250, geometry.size.height * 0.7))
+                    .chartXAxis {
+                        AxisMarks(values: .stride(by: xAxisStride)) { value in
+                            AxisGridLine()
+                            AxisTick()
+                            AxisValueLabel {
+                                if let date = value.as(Date.self) {
+                                    Text(formatXAxisDate(date))
+                                        .font(.caption)
+                                }
                             }
                         }
                     }
-                }
-                .chartYAxis {
-                    AxisMarks { value in
-                        AxisGridLine()
-                        AxisTick()
-                        AxisValueLabel {
-                            if let navValue = value.as(Double.self) {
-                                Text("₹\(navValue.formatted(places: 2))")
-                                    .font(.caption)
+                    .chartYAxis {
+                        AxisMarks { value in
+                            AxisGridLine()
+                            AxisTick()
+                            AxisValueLabel {
+                                if let navValue = value.as(Double.self) {
+                                    Text("₹\(navValue.formatted(places: 2))")
+                                        .font(.caption)
+                                }
                             }
                         }
                     }
+                    .chartYScale(domain: yAxisDomain)
                 }
             }
+            .padding()
+            .background(Color.gray.opacity(0.05))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
-        .padding()
-        .background(Color.gray.opacity(0.05))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+    
+    private var yAxisDomain: ClosedRange<Double> {
+        guard !data.isEmpty else { return 0...100 }
+        
+        let navValues = data.map { $0.navValue }
+        let minValue = navValues.min() ?? 0
+        let maxValue = navValues.max() ?? 100
+        
+        // Add 5% padding to top and bottom for better visualization
+        let range = maxValue - minValue
+        let padding = max(range * 0.05, 0.01) // Minimum padding of 0.01
+        
+        let paddedMin = max(0, minValue - padding) // Don't go below 0 for NAV
+        let paddedMax = maxValue + padding
+        
+        return paddedMin...paddedMax
     }
     
     private var xAxisStride: Calendar.Component {
