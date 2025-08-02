@@ -143,11 +143,8 @@ The app uses a high-performance multi-factor matching system in `FundMatcher.swi
 - ✅ `testFundMatcherWithDividendFiltering()` - Settings integration
 - ✅ `testFundMatcherNoMatch()` - Edge case handling
 
-### Performance Optimization Tests
-- ✅ `testFundMatcherPreprocessFundsDataPopulatesCache()` - Cache population
-- ✅ `testFundMatcherAMCLookupIndexOptimization()` - AMC indexing
-- ✅ `testFundMatcherOptimizedVsLegacyMatchingConsistency()` - Result accuracy
-- ✅ `testFundMatcherEarlyTerminationOnExactMatch()` - Performance optimization
+### Performance Tests
+- ✅ `testFundMatchingPerformanceOptimized()` - Measures matching performance with large datasets
 
 ## Troubleshooting
 
