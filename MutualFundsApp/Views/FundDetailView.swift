@@ -41,8 +41,17 @@ struct FundDetailView: View {
             }
             .padding()
         }
-        .navigationTitle(fund.schemeName)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text(fund.schemeName)
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
         .onAppear {
             viewModel.loadFundDetails(for: fund)
         }
@@ -138,6 +147,14 @@ struct PerformanceChartView: View {
     let data: [NAVData]
     let selectedRange: TimeRange
     
+    private var chartColor: Color {
+        guard let firstValue = data.first?.navValue,
+              let lastValue = data.last?.navValue else {
+            return .blue // Default color when no data
+        }
+        return lastValue >= firstValue ? .green : .red
+    }
+    
     var body: some View {
         GeometryReader { geometry in
             VStack(alignment: .leading, spacing: 12) {
@@ -155,7 +172,7 @@ struct PerformanceChartView: View {
                             x: .value("Date", navData.dateValue),
                             y: .value("NAV", navData.navValue)
                         )
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(chartColor)
                         .lineStyle(StrokeStyle(lineWidth: 2))
                         
                         AreaMark(
@@ -164,7 +181,7 @@ struct PerformanceChartView: View {
                         )
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [.blue.opacity(0.3), .blue.opacity(0.1)],
+                                colors: [chartColor.opacity(0.3), chartColor.opacity(0.1)],
                                 startPoint: .top,
                                 endPoint: .bottom
                             )
