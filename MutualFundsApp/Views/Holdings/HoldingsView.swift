@@ -1,11 +1,19 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+enum SortOption: String, CaseIterable {
+    case currentValueDesc = "Current Value (High to Low)"
+    case currentValueAsc = "Current Value (Low to High)"
+    case xirrDesc = "XIRR (High to Low)"
+    case xirrAsc = "XIRR (Low to High)"
+}
+
 struct HoldingsView: View {
     @StateObject private var holdingsManager = HoldingsManager.shared
     @State private var showingFilePicker = false
     @State private var showingExportSheet = false
     @State private var exportedCSV: String = ""
+    @State private var selectedSortOption: SortOption = .currentValueDesc
     
     var body: some View {
         NavigationView {
@@ -92,8 +100,28 @@ struct HoldingsView: View {
                         }
                         .padding(.horizontal)
                         
+                        // Sort Options
+                        HStack {
+                            Text("Sort by:")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            
+                            Picker("Sort Options", selection: $selectedSortOption) {
+                                ForEach(SortOption.allCases, id: \.self) { option in
+                                    Text(option.rawValue)
+                                        .tag(option)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            .tint(.blue)
+                            
+                            Spacer()
+                        }
+                        .padding(.horizontal)
+                        .padding(.bottom, 8)
+                        
                         LazyVStack(spacing: 8) {
-                            ForEach(portfolio.holdings.sorted { $0.currentValue > $1.currentValue }) { holding in
+                            ForEach(sortedHoldings(portfolio.holdings)) { holding in
                                 HoldingRowView(holding: holding)
                                     .padding(.horizontal)
                             }
@@ -200,6 +228,19 @@ struct HoldingsView: View {
     
     private func clearPortfolio() {
         holdingsManager.clearPortfolio()
+    }
+    
+    private func sortedHoldings(_ holdings: [HoldingData]) -> [HoldingData] {
+        switch selectedSortOption {
+        case .currentValueDesc:
+            return holdings.sorted { $0.currentValue > $1.currentValue }
+        case .currentValueAsc:
+            return holdings.sorted { $0.currentValue < $1.currentValue }
+        case .xirrDesc:
+            return holdings.sorted { $0.xirr > $1.xirr }
+        case .xirrAsc:
+            return holdings.sorted { $0.xirr < $1.xirr }
+        }
     }
     
     private func exportToCSV() {

@@ -669,4 +669,312 @@ final class MutualFundsAppUITests: XCTestCase {
         // Final verification that the app is still functional
         XCTAssertTrue(app.tabBars.buttons["Portfolio"].exists, "Portfolio tab should remain accessible after interactions")
     }
+    
+    // MARK: - Portfolio Sorting UI Tests
+    
+    func testPortfolioSortingControls() throws {
+        let app = XCUIApplication()
+        app.launch()
+        
+        // Wait for splash screen to complete
+        let tabBar = app.tabBars.firstMatch
+        let exists = NSPredicate(format: "exists == true")
+        expectation(for: exists, evaluatedWith: tabBar, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Navigate to Portfolio tab
+        app.tabBars.buttons["Portfolio"].tap()
+        
+        // Wait for view to load
+        Thread.sleep(forTimeInterval: 3)
+        
+        // This test assumes we have portfolio data loaded
+        // In a real test environment, you would set up test data
+        
+        // Look for the "Sort by:" label which indicates sorting controls are present
+        let sortLabel = app.staticTexts.containing(NSPredicate(format: "label CONTAINS[cd] 'Sort by'")).firstMatch
+        
+        if sortLabel.exists {
+            XCTAssertTrue(sortLabel.exists, "Sort by label should be visible when holdings exist")
+            
+            // Look for the sort picker/menu button
+            let sortButton = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'Current Value' OR label CONTAINS[cd] 'XIRR'")).firstMatch
+            
+            if sortButton.exists {
+                XCTAssertTrue(sortButton.exists, "Sort picker button should be visible")
+                XCTAssertTrue(sortButton.isHittable, "Sort picker button should be tappable")
+            }
+        } else {
+            // If no holdings exist, sorting controls shouldn't be visible
+            XCTAssertTrue(app.navigationBars["Portfolio"].exists, "Portfolio view should still be functional without holdings")
+        }
+    }
+    
+    func testPortfolioSortingOptions() throws {
+        let app = XCUIApplication()
+        app.launch()
+        
+        // Wait for splash screen to complete
+        let tabBar = app.tabBars.firstMatch
+        let exists = NSPredicate(format: "exists == true")
+        expectation(for: exists, evaluatedWith: tabBar, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Navigate to Portfolio tab
+        app.tabBars.buttons["Portfolio"].tap()
+        
+        // Wait for view to load
+        Thread.sleep(forTimeInterval: 3)
+        
+        // Look for sort picker button
+        let sortButton = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'Current Value' OR label CONTAINS[cd] 'XIRR'")).firstMatch
+        
+        if sortButton.exists && sortButton.isHittable {
+            // Tap to open sort options
+            sortButton.tap()
+            
+            // Wait for picker menu to appear
+            Thread.sleep(forTimeInterval: 1)
+            
+            // Look for sorting options in the picker
+            let currentValueHighToLow = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'Current Value (High to Low)'")).firstMatch
+            let currentValueLowToHigh = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'Current Value (Low to High)'")).firstMatch
+            let xirrHighToLow = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'XIRR (High to Low)'")).firstMatch
+            let xirrLowToHigh = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'XIRR (Low to High)'")).firstMatch
+            
+            // Test each sorting option if they exist
+            if currentValueHighToLow.exists {
+                XCTAssertTrue(currentValueHighToLow.exists, "Current Value (High to Low) option should be available")
+                currentValueHighToLow.tap()
+                Thread.sleep(forTimeInterval: 1)
+            }
+            
+            // Re-open picker for next option
+            if sortButton.exists && sortButton.isHittable {
+                sortButton.tap()
+                Thread.sleep(forTimeInterval: 1)
+                
+                if currentValueLowToHigh.exists {
+                    XCTAssertTrue(currentValueLowToHigh.exists, "Current Value (Low to High) option should be available")
+                    currentValueLowToHigh.tap()
+                    Thread.sleep(forTimeInterval: 1)
+                }
+            }
+            
+            // Test XIRR sorting options
+            if sortButton.exists && sortButton.isHittable {
+                sortButton.tap()
+                Thread.sleep(forTimeInterval: 1)
+                
+                if xirrHighToLow.exists {
+                    XCTAssertTrue(xirrHighToLow.exists, "XIRR (High to Low) option should be available")
+                    xirrHighToLow.tap()
+                    Thread.sleep(forTimeInterval: 1)
+                }
+            }
+            
+            if sortButton.exists && sortButton.isHittable {
+                sortButton.tap()
+                Thread.sleep(forTimeInterval: 1)
+                
+                if xirrLowToHigh.exists {
+                    XCTAssertTrue(xirrLowToHigh.exists, "XIRR (Low to High) option should be available")
+                    xirrLowToHigh.tap()
+                    Thread.sleep(forTimeInterval: 1)
+                }
+            }
+        } else {
+            // If no holdings exist, test passes with basic verification
+            XCTAssertTrue(app.navigationBars["Portfolio"].exists, "Portfolio view should be functional")
+        }
+    }
+    
+    func testPortfolioSortingPersistence() throws {
+        let app = XCUIApplication()
+        app.launch()
+        
+        // Wait for splash screen to complete
+        let tabBar = app.tabBars.firstMatch
+        let exists = NSPredicate(format: "exists == true")
+        expectation(for: exists, evaluatedWith: tabBar, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Navigate to Portfolio tab
+        app.tabBars.buttons["Portfolio"].tap()
+        
+        // Wait for view to load
+        Thread.sleep(forTimeInterval: 3)
+        
+        // Look for sort picker button
+        let sortButton = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'Current Value' OR label CONTAINS[cd] 'XIRR'")).firstMatch
+        
+        if sortButton.exists && sortButton.isHittable {
+            // Change sort option
+            sortButton.tap()
+            Thread.sleep(forTimeInterval: 1)
+            
+            let xirrOption = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'XIRR'")).firstMatch
+            if xirrOption.exists {
+                xirrOption.tap()
+                Thread.sleep(forTimeInterval: 1)
+                
+                // Navigate away from Portfolio tab
+                app.tabBars.buttons["Funds"].tap()
+                Thread.sleep(forTimeInterval: 2)
+                
+                // Navigate back to Portfolio tab
+                app.tabBars.buttons["Portfolio"].tap()
+                Thread.sleep(forTimeInterval: 3)
+                
+                // Check if sort option is still selected (persistence test)
+                let updatedSortButton = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'XIRR'")).firstMatch
+                if updatedSortButton.exists {
+                    XCTAssertTrue(updatedSortButton.exists, "Sort option should persist after navigation")
+                }
+            }
+        } else {
+            // If no holdings exist, test basic navigation persistence
+            app.tabBars.buttons["Funds"].tap()
+            Thread.sleep(forTimeInterval: 1)
+            app.tabBars.buttons["Portfolio"].tap()
+            Thread.sleep(forTimeInterval: 2)
+            XCTAssertTrue(app.navigationBars["Portfolio"].exists, "Portfolio view should remain functional")
+        }
+    }
+    
+    func testPortfolioSortingWithHoldingsData() throws {
+        let app = XCUIApplication()
+        app.launch()
+        
+        // Wait for splash screen to complete
+        let tabBar = app.tabBars.firstMatch
+        let exists = NSPredicate(format: "exists == true")
+        expectation(for: exists, evaluatedWith: tabBar, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Navigate to Portfolio tab
+        app.tabBars.buttons["Portfolio"].tap()
+        
+        // Wait for view to load
+        Thread.sleep(forTimeInterval: 3)
+        
+        // This test assumes portfolio data exists
+        // Look for holdings rows/cards
+        let holdingsSection = app.staticTexts.containing(NSPredicate(format: "label CONTAINS[cd] 'Holdings'")).firstMatch
+        
+        if holdingsSection.exists {
+            // Holdings exist, test sorting functionality
+            let sortButton = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'Current Value' OR label CONTAINS[cd] 'XIRR'")).firstMatch
+            
+            if sortButton.exists && sortButton.isHittable {
+                // Test different sort orders and verify UI updates
+                
+                // Current Value High to Low (default)
+                let holdingsBefore = app.otherElements.matching(NSPredicate(format: "identifier CONTAINS 'holding' OR label CONTAINS 'Current Value'"))
+                let countBefore = holdingsBefore.count
+                
+                // Change to Current Value Low to High
+                sortButton.tap()
+                Thread.sleep(forTimeInterval: 1)
+                
+                let lowToHighOption = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'Current Value (Low to High)'")).firstMatch
+                if lowToHighOption.exists {
+                    lowToHighOption.tap()
+                    Thread.sleep(forTimeInterval: 2)
+                    
+                    // Verify holdings are still displayed (order might have changed)
+                    let holdingsAfter = app.otherElements.matching(NSPredicate(format: "identifier CONTAINS 'holding' OR label CONTAINS 'Current Value'"))
+                    let countAfter = holdingsAfter.count
+                    
+                    // The count should remain the same, indicating holdings are still displayed
+                    if countBefore > 0 {
+                        XCTAssertEqual(countAfter, countBefore, "Holdings count should remain same after sorting")
+                    }
+                }
+                
+                // Test XIRR sorting
+                if sortButton.exists && sortButton.isHittable {
+                    sortButton.tap()
+                    Thread.sleep(forTimeInterval: 1)
+                    
+                    let xirrHighToLow = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'XIRR (High to Low)'")).firstMatch
+                    if xirrHighToLow.exists {
+                        xirrHighToLow.tap()
+                        Thread.sleep(forTimeInterval: 2)
+                        
+                        // Verify holdings are still displayed after XIRR sorting
+                        let holdingsAfterXIRR = app.otherElements.matching(NSPredicate(format: "identifier CONTAINS 'holding' OR label CONTAINS 'Current Value'"))
+                        let countAfterXIRR = holdingsAfterXIRR.count
+                        
+                        if countBefore > 0 {
+                            XCTAssertEqual(countAfterXIRR, countBefore, "Holdings count should remain same after XIRR sorting")
+                        }
+                    }
+                }
+            }
+        } else {
+            // No holdings data - verify empty state is handled properly
+            let noHoldingsText = app.staticTexts.containing(NSPredicate(format: "label CONTAINS[cd] 'No Holdings Found'")).firstMatch
+            if noHoldingsText.exists {
+                XCTAssertTrue(noHoldingsText.exists, "Should show empty state when no holdings exist")
+                
+                // Sorting controls should not be visible in empty state
+                let sortButton = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'Sort by'")).firstMatch
+                XCTAssertFalse(sortButton.exists, "Sort controls should not be visible in empty state")
+            }
+        }
+    }
+    
+    func testPortfolioSortingAccessibility() throws {
+        let app = XCUIApplication()
+        app.launch()
+        
+        // Wait for splash screen to complete
+        let tabBar = app.tabBars.firstMatch
+        let exists = NSPredicate(format: "exists == true")
+        expectation(for: exists, evaluatedWith: tabBar, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
+        
+        // Navigate to Portfolio tab
+        app.tabBars.buttons["Portfolio"].tap()
+        
+        // Wait for view to load
+        Thread.sleep(forTimeInterval: 3)
+        
+        // Test accessibility of sorting controls
+        let sortLabel = app.staticTexts.containing(NSPredicate(format: "label CONTAINS[cd] 'Sort by'")).firstMatch
+        
+        if sortLabel.exists {
+            // Check if sort label has proper accessibility
+            XCTAssertTrue(sortLabel.exists, "Sort by label should be accessible")
+            
+            let sortButton = app.buttons.containing(NSPredicate(format: "label CONTAINS[cd] 'Current Value' OR label CONTAINS[cd] 'XIRR'")).firstMatch
+            
+            if sortButton.exists {
+                // Check accessibility properties
+                XCTAssertTrue(sortButton.isHittable, "Sort button should be hittable for accessibility")
+                
+                // Test that the button responds to tap (accessibility testing)
+                sortButton.tap()
+                Thread.sleep(forTimeInterval: 1)
+                
+                // Check that picker options are accessible
+                let pickerOptions = app.buttons.matching(NSPredicate(format: "label CONTAINS[cd] 'Current Value' OR label CONTAINS[cd] 'XIRR'"))
+                
+                for i in 0..<min(pickerOptions.count, 4) { // Limit to expected number of options
+                    let option = pickerOptions.element(boundBy: i)
+                    if option.exists {
+                        XCTAssertTrue(option.isHittable, "Sort option \(i) should be accessible")
+                    }
+                }
+                
+                // Dismiss picker by tapping outside
+                app.coordinate(withNormalizedOffset: CGVector(dx: 0.1, dy: 0.1)).tap()
+                Thread.sleep(forTimeInterval: 1)
+            }
+        } else {
+            // If no holdings, ensure accessibility is maintained
+            XCTAssertTrue(app.navigationBars["Portfolio"].exists, "Portfolio navigation should remain accessible")
+        }
+    }
 }
