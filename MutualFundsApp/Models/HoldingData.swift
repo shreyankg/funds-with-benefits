@@ -10,14 +10,51 @@ struct HoldingData: Codable, Identifiable, Hashable {
     let source: String
     let units: Double
     let investedValue: Double
-    let currentValue: Double
-    let returns: Double
-    let xirr: Double
     
-    // Computed properties
+    // Original values from holdings file (for reference)
+    let originalCurrentValue: Double
+    let originalReturns: Double
+    let originalXirr: Double
+    
+    // Live calculated values using latest NAV
+    var latestNAV: Double?
+    var statementDate: Date?
+    
+    // Live calculated properties using latest NAV
+    var currentValue: Double {
+        guard let nav = latestNAV, units > 0 else {
+            return originalCurrentValue // Fallback to original if no NAV
+        }
+        return units * nav
+    }
+    
+    var returns: Double {
+        return currentValue - investedValue
+    }
+    
     var returnsPercentage: Double {
         guard investedValue > 0 else { return 0 }
         return (returns / investedValue) * 100
+    }
+    
+    var xirr: Double {
+        // Calculate XIRR using simple annualized return if we have statement date
+        guard let statementDate = statementDate, 
+              investedValue > 0,
+              currentValue > 0 else {
+            return originalXirr // Fallback to original
+        }
+        
+        let daysDifference = Date().timeIntervalSince(statementDate) / (24 * 60 * 60)
+        let yearsDifference = daysDifference / 365.25
+        
+        guard yearsDifference > 0 else {
+            return originalXirr
+        }
+        
+        // Simple annualized return calculation: ((Current/Invested)^(1/years) - 1) * 100
+        let annualizedReturn = pow(currentValue / investedValue, 1.0 / yearsDifference) - 1.0
+        return annualizedReturn * 100
     }
     
     var navPerUnit: Double {
@@ -30,12 +67,14 @@ struct HoldingData: Codable, Identifiable, Hashable {
     
     private enum CodingKeys: String, CodingKey {
         case schemeName, amcName, category, subCategory, folioNumber, source
-        case units, investedValue, currentValue, returns, xirr, matchedSchemeCode
+        case units, investedValue, originalCurrentValue, originalReturns, originalXirr
+        case matchedSchemeCode, latestNAV, statementDate
     }
     
     init(schemeName: String, amcName: String, category: String, subCategory: String, 
          folioNumber: String, source: String, units: Double, investedValue: Double, 
-         currentValue: Double, returns: Double, xirr: Double, matchedSchemeCode: String? = nil) {
+         currentValue: Double, returns: Double, xirr: Double, matchedSchemeCode: String? = nil,
+         latestNAV: Double? = nil, statementDate: Date? = nil) {
         self.schemeName = schemeName
         self.amcName = amcName
         self.category = category
@@ -44,10 +83,12 @@ struct HoldingData: Codable, Identifiable, Hashable {
         self.source = source
         self.units = units
         self.investedValue = investedValue
-        self.currentValue = currentValue
-        self.returns = returns
-        self.xirr = xirr
+        self.originalCurrentValue = currentValue
+        self.originalReturns = returns
+        self.originalXirr = xirr
         self.matchedSchemeCode = matchedSchemeCode
+        self.latestNAV = latestNAV
+        self.statementDate = statementDate
     }
     
     // Helper function to create from parsed data
@@ -83,6 +124,7 @@ struct HoldingData: Codable, Identifiable, Hashable {
             currentValue: currentValue,
             returns: returns,
             xirr: xirr
+            // Note: No statementDate set, so it defaults to nil and xirr will use originalXirr
         )
     }
 }

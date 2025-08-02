@@ -56,8 +56,8 @@ FundsWithBenefitsApp/
 - `GET /mf/{schemeCode}` - Individual fund history
 
 **Caching Strategy:**
-- Fund list: 1 hour expiration
-- Fund history: 30 minutes expiration
+- Fund list: 24 hours expiration
+- Fund history: 24 hours expiration  
 - Storage: UserDefaults with structured data
 
 ## Development Commands

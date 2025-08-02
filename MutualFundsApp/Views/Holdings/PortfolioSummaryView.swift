@@ -104,14 +104,6 @@ struct PortfolioSummaryView: View {
                     value: summary.returnsPercentage,
                     icon: summary.returnsPercentage >= 0 ? "arrow.up.right" : "arrow.down.right"
                 )
-                
-                Divider()
-                
-                performanceIndicator(
-                    title: "XIRR",
-                    value: summary.overallXIRR,
-                    icon: summary.overallXIRR >= 0 ? "chart.line.uptrend.xyaxis" : "chart.line.downtrend.xyaxis"
-                )
             }
             .frame(height: 60)
         }

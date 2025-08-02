@@ -190,10 +190,12 @@ class FundMatcher: ObservableObject {
                     source: holding.source,
                     units: holding.units,
                     investedValue: holding.investedValue,
-                    currentValue: holding.currentValue,
-                    returns: holding.returns,
-                    xirr: holding.xirr,
-                    matchedSchemeCode: schemeCode
+                    currentValue: holding.originalCurrentValue,
+                    returns: holding.originalReturns,
+                    xirr: holding.originalXirr,
+                    matchedSchemeCode: schemeCode,
+                    latestNAV: holding.latestNAV,
+                    statementDate: holding.statementDate
                 )
             }
             
@@ -201,6 +203,55 @@ class FundMatcher: ObservableObject {
         }
         
         return matchedHoldings
+    }
+    
+    // MARK: - Live NAV Updates
+    
+    // Update holdings with latest NAV data for live calculations
+    func updateHoldingsWithLatestNAV(_ holdings: [HoldingData]) async throws -> [HoldingData] {
+        var updatedHoldings: [HoldingData] = []
+        
+        for holding in holdings {
+            var updatedHolding = holding
+            
+            // Only update if we have a matched scheme code
+            if let schemeCode = holding.matchedSchemeCode {
+                do {
+                    // Fetch latest NAV from API
+                    let fundHistory = try await APIService.shared.fetchFundHistory(schemeCode: schemeCode)
+                    
+                    // Get the latest NAV (first entry in the data array)
+                    if let latestNAVData = fundHistory.data.first {
+                        let latestNAV = latestNAVData.navValue
+                        
+                        // Create updated holding with latest NAV
+                        updatedHolding = HoldingData(
+                            schemeName: holding.schemeName,
+                            amcName: holding.amcName,
+                            category: holding.category,
+                            subCategory: holding.subCategory,
+                            folioNumber: holding.folioNumber,
+                            source: holding.source,
+                            units: holding.units,
+                            investedValue: holding.investedValue,
+                            currentValue: holding.originalCurrentValue,
+                            returns: holding.originalReturns,
+                            xirr: holding.originalXirr,
+                            matchedSchemeCode: schemeCode,
+                            latestNAV: latestNAV,
+                            statementDate: holding.statementDate
+                        )
+                    }
+                } catch {
+                    // If NAV fetch fails, keep the original holding without NAV update
+                    print("Failed to fetch NAV for \(holding.schemeName): \(error)")
+                }
+            }
+            
+            updatedHoldings.append(updatedHolding)
+        }
+        
+        return updatedHoldings
     }
     
     // Optimized version of findBestMatch using cached data with simplified filtering

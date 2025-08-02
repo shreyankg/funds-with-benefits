@@ -40,10 +40,13 @@ class HoldingsManager: ObservableObject {
                 let availableFunds = try await self.apiService.fetchAllFunds()
                 
                 // 3. Match holdings with available funds (background task)
-                let matchedHoldings = self.fundMatcher.matchHoldingsWithFunds(parsedHoldings, availableFunds: availableFunds)
+                let matchedHoldings = await self.fundMatcher.matchHoldingsWithFunds(parsedHoldings, availableFunds: availableFunds)
                 
-                // 4. Create portfolio
-                return Portfolio(holdings: matchedHoldings)
+                // 4. Update holdings with latest NAV data for live calculations
+                let updatedHoldings = try await self.fundMatcher.updateHoldingsWithLatestNAV(matchedHoldings)
+                
+                // 5. Create portfolio
+                return Portfolio(holdings: updatedHoldings)
             }.value
             
             // Save portfolio and update UI state on main thread
@@ -121,7 +124,10 @@ class HoldingsManager: ObservableObject {
                 }
                 
                 // Re-match holdings with fund data (background task)  
-                let updatedHoldings = self.fundMatcher.matchHoldingsWithFunds(currentPortfolio.holdings, availableFunds: funds)
+                let matchedHoldings = await self.fundMatcher.matchHoldingsWithFunds(currentPortfolio.holdings, availableFunds: funds)
+                
+                // Update holdings with latest NAV data for live calculations
+                let updatedHoldings = try await self.fundMatcher.updateHoldingsWithLatestNAV(matchedHoldings)
                 
                 return Portfolio(holdings: updatedHoldings)
             }.value
@@ -146,7 +152,7 @@ class HoldingsManager: ObservableObject {
     // MARK: - Individual Holdings Management
     
     func updateHolding(_ holding: HoldingData) async {
-        guard var currentPortfolio = portfolio else { return }
+        guard let currentPortfolio = portfolio else { return }
         
         // Find and update the holding
         if let index = currentPortfolio.holdings.firstIndex(where: { $0.id == holding.id }) {
@@ -159,7 +165,7 @@ class HoldingsManager: ObservableObject {
     }
     
     func removeHolding(_ holding: HoldingData) async {
-        guard var currentPortfolio = portfolio else { return }
+        guard let currentPortfolio = portfolio else { return }
         
         let updatedHoldings = currentPortfolio.holdings.filter { $0.id != holding.id }
         let updatedPortfolio = Portfolio(holdings: updatedHoldings)
