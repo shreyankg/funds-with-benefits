@@ -2,10 +2,10 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 enum SortOption: String, CaseIterable {
-    case currentValueDesc = "Current Value (High to Low)"
-    case currentValueAsc = "Current Value (Low to High)"
-    case xirrDesc = "XIRR (High to Low)"
-    case xirrAsc = "XIRR (Low to High)"
+    case currentValueDesc = "Value ↓"
+    case currentValueAsc = "Value ↑"
+    case xirrDesc = "XIRR ↓"
+    case xirrAsc = "XIRR ↑"
 }
 
 struct HoldingsView: View {
@@ -24,7 +24,7 @@ struct HoldingsView: View {
                     emptyStateView
                 }
             }
-            .navigationTitle("Portfolio")
+            .navigationBarHidden(true)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
@@ -88,37 +88,54 @@ struct HoldingsView: View {
                     // Holdings List
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
+                            // Sort Options (left side)
+                            Menu {
+                                ForEach(SortOption.allCases, id: \.self) { option in
+                                    Button(action: {
+                                        selectedSortOption = option
+                                    }) {
+                                        HStack {
+                                            Text(option.rawValue)
+                                            if selectedSortOption == option {
+                                                Image(systemName: "checkmark")
+                                                    .foregroundColor(.secondary)
+                                            }
+                                        }
+                                    }
+                                }
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Text(selectedSortOption.rawValue)
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                    Image(systemName: "chevron.down")
+                                        .font(.caption)
+                                }
+                                .foregroundColor(.secondary)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color.gray.opacity(0.1))
+                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                )
+                            }
+                            
+                            Spacer()
+                            
+                            // Holdings title (center)
                             Text("Holdings")
                                 .font(.title2)
                                 .fontWeight(.bold)
                             
                             Spacer()
                             
+                            // Fund count (right)
                             Text("\(portfolio.holdings.count) funds")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
                         .padding(.horizontal)
-                        
-                        // Sort Options
-                        HStack {
-                            Text("Sort by:")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            Picker("Sort Options", selection: $selectedSortOption) {
-                                ForEach(SortOption.allCases, id: \.self) { option in
-                                    Text(option.rawValue)
-                                        .tag(option)
-                                }
-                            }
-                            .pickerStyle(.menu)
-                            .tint(.blue)
-                            
-                            Spacer()
-                        }
-                        .padding(.horizontal)
-                        .padding(.bottom, 8)
                         
                         LazyVStack(spacing: 8) {
                             ForEach(sortedHoldings(portfolio.holdings)) { holding in

@@ -40,8 +40,7 @@ struct FundsListView: View {
                     }
                 }
             }
-            .navigationTitle("Mutual Funds")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarHidden(true)
         }
     }
 }

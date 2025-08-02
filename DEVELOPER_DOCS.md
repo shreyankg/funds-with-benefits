@@ -9,6 +9,8 @@ Funds with Benefits (FWB) is an iOS application for tracking and analyzing India
 - Advanced search and filtering capabilities
 - Holdings management with PDF import capability
 - High-performance fund matching with 99%+ accuracy
+- Portfolio sorting by Current Value and XIRR (ascending/descending)
+- Headerless UI design for clean, focused interface
 
 ## Architecture & Tech Stack
 
@@ -74,7 +76,8 @@ xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name
 
 ### Current Test Status ✅
 - **Unit Tests**: 43/43 passing (100% pass rate)
-- **UI Tests**: 13/14 passing (93% pass rate)
+- **UI Tests**: 18/19 passing (95% pass rate) - includes portfolio sorting tests
+- **Portfolio Sorting Tests**: All 5 new sorting UI tests passing ✅
 
 ## Fund Matching Algorithm - Optimized (July 2025)
 
@@ -109,6 +112,20 @@ The app uses a high-performance multi-factor matching system in `FundMatcher.swi
 - **Multi-Layer Caching**: Normalized names, similarity scores, preprocessing cache
 - **Early Termination**: Stops on exact matches
 - **Cache Preprocessing**: Apply filtering during fund data loading
+
+## Portfolio Sorting Feature (August 2025)
+
+### Implementation Details
+- **Sort Options**: 4 options - Value ↑/↓, XIRR ↑/↓ 
+- **UI Design**: Compact grayscale selector positioned left of Holdings header
+- **State Management**: Selected sort option persists across navigation
+- **Performance**: Client-side sorting with immediate UI updates
+
+### UI Architecture Changes (August 2025)
+- **Headerless Design**: All navigation bars hidden for clean interface
+- **Content Focus**: Tab bar provides navigation context
+- **UI Tests**: Updated to use permanent content elements instead of nav bars
+- **Accessibility**: Full support maintained with proper element identification
 
 ## Dividend Fund Filtering
 

@@ -32,6 +32,7 @@ A comprehensive iOS app for tracking and analyzing Indian mutual funds using rea
 - Import holdings from PDF statements (currently supports [Groww](https://groww.in/) app statements only)
 - Fund matching and portfolio tracking with intelligent filtering
 - Holdings overview and portfolio summary
+- Portfolio sorting by Value and XIRR (ascending/descending with ↑/↓ indicators)
 
 ### ⚙️ **Settings & Preferences**
 - Toggle to show/hide dividend funds (hidden by default for better UX)
@@ -96,6 +97,7 @@ FundsWithBenefitsApp/
 - Loading states and error handling
 - Responsive design for all iPhone sizes
 - Intuitive navigation and interaction patterns
+- Clean, headerless interface design for maximum content focus
 
 ## Data Source
 

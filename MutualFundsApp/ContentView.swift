@@ -68,7 +68,7 @@ struct SettingsView: View {
                 }
                 
             }
-            .navigationTitle("Settings")
+            .navigationBarHidden(true)
         }
     }
 }
@@ -244,7 +244,7 @@ struct AboutView: View {
                 }
                 .padding()
             }
-            .navigationTitle("About")
+            .navigationBarHidden(true)
         }
     }
 }
