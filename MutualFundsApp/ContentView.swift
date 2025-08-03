@@ -1,8 +1,11 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 // Temporary inline SettingsView until we add the separate file to Xcode project
 struct SettingsView: View {
     @StateObject private var settings = AppSettings.shared
+    @StateObject private var holdingsManager = HoldingsManager.shared
+    @State private var showingFilePicker = false
     
     var body: some View {
         NavigationView {
@@ -67,6 +70,50 @@ struct SettingsView: View {
                     Text("Information")
                 }
                 
+                Section {
+                    Button(action: { showingFilePicker = true }) {
+                        HStack {
+                            Image(systemName: "doc.badge.plus")
+                                .foregroundColor(.blue)
+                                .font(.title2)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Upload Holdings File")
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                                Text("Import your portfolio from PDF or CSV")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Spacer()
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.vertical, 4)
+                    }
+                } header: {
+                    Text("Portfolio Management")
+                } footer: {
+                    Text("Upload your holdings statement to track your portfolio and get comprehensive analytics.")
+                }
+                
+            }
+            .sheet(isPresented: $showingFilePicker) {
+                FilePickerView { url in
+                    Task {
+                        await holdingsManager.uploadHoldingsFile(from: url)
+                    }
+                }
+            }
+            .alert("Error", isPresented: .constant(holdingsManager.errorMessage != nil)) {
+                Button("OK") {
+                    holdingsManager.clearError()
+                }
+            } message: {
+                Text(holdingsManager.errorMessage ?? "")
             }
             .navigationBarHidden(true)
         }

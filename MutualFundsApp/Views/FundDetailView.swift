@@ -33,21 +33,24 @@ struct FundDetailView: View {
                         selectedRange: viewModel.currentTimeRange,
                         onZoomGesture: { translation in
                             viewModel.updateZoom(dragTranslation: translation)
-                        }
+                        },
+                        viewModel: viewModel
                     )
-                    .frame(minHeight: 300, maxHeight: 600)
+                    .frame(minHeight: 250, maxHeight: 400)
                     
                     if let performance = viewModel.currentPerformance {
                         PerformanceMetricsView(
                             performance: performance,
                             timeRange: viewModel.currentTimeRange
                         )
+                        .padding(.top, 20)
                     }
                     
                     FundInfoView(details: details)
                 }
             }
-            .padding()
+            .padding(.horizontal, 8)
+            .padding(.vertical)
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -119,6 +122,69 @@ struct FundHeaderView: View {
     }
 }
 
+struct StartDateSelector: View {
+    @ObservedObject var viewModel: FundDetailViewModel
+    @State private var refreshTrigger = false
+    @State private var lastSelectedDate: Date?
+    
+    var body: some View {
+        DatePicker(
+            "",
+            selection: Binding(
+                get: { viewModel.chartStartDate },
+                set: { newDate in
+                    let calendar = Calendar.current
+                    let currentDate = viewModel.chartStartDate
+                    
+                    // Check if this is a complete date selection (day changed)
+                    // vs just month/year navigation
+                    let isDaySelection = lastSelectedDate == nil || 
+                        !calendar.isDate(newDate, inSameDayAs: currentDate)
+                    
+                    // Check if user actually picked a different day (not just month/year navigation)
+                    let isActualDateChange = lastSelectedDate == nil ||
+                        !calendar.isDate(newDate, inSameDayAs: lastSelectedDate!)
+                    
+                    viewModel.updateZoomFromStartDate(newDate)
+                    lastSelectedDate = newDate
+                    
+                    // Only dismiss if this was a complete date (day) selection
+                    if isDaySelection && isActualDateChange {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            refreshTrigger.toggle()
+                        }
+                    }
+                }
+            ),
+            in: dateRange,
+            displayedComponents: [.date]
+        )
+        .datePickerStyle(.compact)
+        .labelsHidden()
+        .font(.caption2)
+        .scaleEffect(0.9)
+        .id(refreshTrigger)
+        .onAppear {
+            lastSelectedDate = viewModel.chartStartDate
+        }
+    }
+    
+    private var dateRange: ClosedRange<Date> {
+        let endDate = Date()
+        let calendar = Calendar.current
+        
+        // Earliest date: fund inception or 10 years ago, whichever is more recent
+        let earliestAllowed = calendar.date(byAdding: .day, value: -viewModel.maxAllowedZoomDays, to: endDate) ?? endDate
+        let fundInception = viewModel.fundInceptionDate ?? earliestAllowed
+        let startDate = max(earliestAllowed, fundInception)
+        
+        // Latest date: 5 days ago (minimum zoom)
+        let latestDate = calendar.date(byAdding: .day, value: -viewModel.minZoomDays, to: endDate) ?? endDate
+        
+        return startDate...latestDate
+    }
+}
+
 struct TimeRangeSelector: View {
     @Binding var selectedRange: TimeRange
     let currentTimeRange: TimeRange
@@ -170,10 +236,12 @@ struct TimeRangeSelector: View {
         let standardRanges = TimeRange.allCases.sorted { $0.days < $1.days }
         
         if isCustomRange {
+            // When custom range is shown, exclude 6M from standard ranges
+            let filteredStandardRanges = standardRanges.filter { $0 != .sixMonths }
             let customDays = currentTimeRange.days
             var inserted = false
             
-            for standardRange in standardRanges {
+            for standardRange in filteredStandardRanges {
                 // Insert custom range before the first standard range that has more days
                 if !inserted && customDays < standardRange.days {
                     ranges.append(currentTimeRange)
@@ -187,6 +255,7 @@ struct TimeRangeSelector: View {
                 ranges.append(currentTimeRange)
             }
         } else {
+            // When no custom range, show all standard ranges (including 6M)
             ranges = standardRanges
         }
         
@@ -206,6 +275,7 @@ struct PerformanceChartView: View {
     let data: [NAVData]
     let selectedRange: TimeRange
     let onZoomGesture: ((CGSize) -> Void)?
+    @ObservedObject var viewModel: FundDetailViewModel
     
     @State private var dragOffset: CGSize = .zero
     @State private var isDragging: Bool = false
@@ -222,19 +292,12 @@ struct PerformanceChartView: View {
         GeometryReader { geometry in
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text("Performance Chart")
-                        .font(.headline)
+                    StartDateSelector(viewModel: viewModel)
                     
                     Spacer()
                     
-                    Text(selectedRange.displayName)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color.blue.opacity(0.1))
-                        .foregroundColor(.blue)
-                        .clipShape(Capsule())
+                    Text("Performance Chart")
+                        .font(.headline)
                 }
                 
                 if data.isEmpty {
@@ -280,7 +343,7 @@ struct PerformanceChartView: View {
                                 dragOffset = .zero
                             }
                     )
-                    .frame(height: max(250, geometry.size.height * 0.7))
+                    .frame(height: max(200, geometry.size.height * 0.6))
                     .chartXAxis {
                         AxisMarks(values: .stride(by: xAxisStride)) { value in
                             AxisGridLine()
@@ -308,7 +371,7 @@ struct PerformanceChartView: View {
                     .chartYScale(domain: yAxisDomain)
                 }
             }
-            .padding()
+            .padding(.horizontal, 4)
             .background(Color.gray.opacity(0.05))
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
@@ -375,28 +438,28 @@ struct PerformanceMetricsView: View {
             Text("Performance Metrics")
                 .font(.headline)
             
-            HStack(spacing: 20) {
+            HStack(spacing: 12) {
                 MetricCard(
                     title: "Total Return",
                     value: performance.formattedTotalReturn,
-                    subtitle: timeRange.displayName,
+                    subtitle: "",
                     color: performance.totalReturn >= 0 ? .green : .red
                 )
                 
                 MetricCard(
-                    title: "Annualized Return",
+                    title: "Volatility",
+                    value: performance.formattedVolatility,
+                    subtitle: "",
+                    color: .orange
+                )
+                
+                MetricCard(
+                    title: "CAGR",
                     value: performance.formattedAnnualizedReturn,
-                    subtitle: "CAGR",
+                    subtitle: "",
                     color: performance.annualizedReturn >= 0 ? .green : .red
                 )
             }
-            
-            MetricCard(
-                title: "Volatility",
-                value: performance.formattedVolatility,
-                subtitle: "Risk Measure",
-                color: .orange
-            )
         }
     }
 }
@@ -414,13 +477,15 @@ struct MetricCard: View {
                 .foregroundColor(.secondary)
             
             Text(value)
-                .font(.title2)
+                .font(.headline)
                 .fontWeight(.bold)
                 .foregroundColor(color)
             
-            Text(subtitle)
-                .font(.caption)
-                .foregroundColor(.secondary)
+            if !subtitle.isEmpty {
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()

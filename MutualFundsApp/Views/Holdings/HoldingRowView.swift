@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HoldingRowView: View {
     let holding: HoldingData
+    let isClickable: Bool
     @State private var showingFundDetail = false
     @StateObject private var holdingsManager = HoldingsManager.shared
     
@@ -13,44 +14,38 @@ struct HoldingRowView: View {
                     Text(holding.schemeName)
                         .font(.headline)
                         .lineLimit(2)
-                    
-                    Text(holding.amcName)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
                 }
                 
                 Spacer()
                 
                 VStack(alignment: .trailing, spacing: 4) {
-                    // Match status indicator
-                    HStack(spacing: 4) {
-                        Circle()
-                            .fill(holding.matchedSchemeCode != nil ? Color.green : Color.orange)
-                            .frame(width: 8, height: 8)
-                        
-                        Text(holding.matchedSchemeCode != nil ? "Matched" : "Unmatched")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    // Category badge
-                    Text(holding.category)
+                    // Source badge (moved to top right)
+                    Text(holding.source)
                         .font(.caption)
-                        .padding(.horizontal, 8)
+                        .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(categoryColor.opacity(0.2))
-                        .foregroundColor(categoryColor)
+                        .background(Color.blue.opacity(0.2))
+                        .foregroundColor(.blue)
                         .cornerRadius(4)
+                    
+                    // Match status indicator - only show for unmatched funds
+                    if holding.matchedSchemeCode == nil {
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(Color.orange)
+                                .frame(width: 8, height: 8)
+                            
+                            Text("Unmatched")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
             }
             
             // Investment details
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Units")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
                     Text(holding.units.formatted(.number.precision(.fractionLength(3))))
                         .font(.subheadline)
                         .fontWeight(.medium)
@@ -58,36 +53,24 @@ struct HoldingRowView: View {
                 
                 Spacer()
                 
-                VStack(alignment: .center, spacing: 4) {
-                    Text("Invested")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
+                HStack(spacing: 8) {
                     Text(holding.investedValue.formatted(.currency(code: "INR")))
                         .font(.subheadline)
                         .fontWeight(.medium)
-                }
-                
-                Spacer()
-                
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text("Current Value")
+                    
+                    Image(systemName: "arrow.right")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
                     Text(holding.currentValue.formatted(.currency(code: "INR")))
                         .font(.subheadline)
-                        .fontWeight(.medium)
+                        .fontWeight(.bold)
                 }
             }
             
             // Returns and XIRR
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Returns")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
                     HStack(spacing: 4) {
                         Text(holding.returns.formatted(.currency(code: "INR")))
                             .font(.subheadline)
@@ -102,60 +85,24 @@ struct HoldingRowView: View {
                 
                 Spacer()
                 
-                VStack(alignment: .center, spacing: 4) {
-                    Text("XIRR")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
+                VStack(alignment: .trailing, spacing: 4) {
                     Text("\(holding.xirr.formatted(.number.precision(.fractionLength(2))))%")
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .foregroundColor(holding.xirr >= 0 ? .green : .red)
                 }
-                
-                Spacer()
-                
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text("Source")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text(holding.source)
-                        .font(.caption)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Color.blue.opacity(0.2))
-                        .foregroundColor(.blue)
-                        .cornerRadius(4)
-                }
             }
             
-            // Additional details row
-            HStack(spacing: 16) {
-                Label(holding.folioNumber, systemImage: "doc.text")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Spacer()
-                
-                if holding.matchedSchemeCode != nil {
-                    Button(action: { showingFundDetail = true }) {
-                        HStack(spacing: 4) {
-                            Text("View Details")
-                                .font(.caption)
-                            
-                            Image(systemName: "arrow.up.right")
-                                .font(.caption2)
-                        }
-                        .foregroundColor(.blue)
-                    }
-                }
-            }
         }
         .padding()
         .background(Color(.systemBackground))
         .cornerRadius(12)
         .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .onTapGesture {
+            if isClickable && holding.matchedSchemeCode != nil {
+                showingFundDetail = true
+            }
+        }
         .sheet(isPresented: $showingFundDetail) {
             if let schemeCode = holding.matchedSchemeCode {
                 FundDetailSheetView(holding: holding, schemeCode: schemeCode)
@@ -163,18 +110,6 @@ struct HoldingRowView: View {
         }
     }
     
-    private var categoryColor: Color {
-        switch holding.category.lowercased() {
-        case "equity":
-            return .blue
-        case "debt":
-            return .green
-        case "hybrid":
-            return .orange
-        default:
-            return .purple
-        }
-    }
 }
 
 struct FundDetailSheetView: View {
@@ -221,13 +156,8 @@ struct FundDetailSheetView: View {
             }
             .navigationTitle(holding.schemeName)
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
         .task {
             loadFundDetails()
@@ -270,7 +200,8 @@ struct FundDetailSheetView: View {
             returns: 15649.44,
             xirr: 10.19,
             matchedSchemeCode: "123456"
-        )
+        ),
+        isClickable: true
     )
     .padding()
 }

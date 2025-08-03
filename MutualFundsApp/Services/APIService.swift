@@ -202,8 +202,8 @@ class FundDetailViewModel: ObservableObject {
     @Published var isZoomingEnabled = true
     
     private let apiService = APIService.shared
-    private let minZoomDays = 7
-    private let maxZoomDays = 1095
+    let minZoomDays = 5
+    let maxZoomDays = 3650
     
     func loadFundDetails(for fund: MutualFund, forceRefresh: Bool = false) {
         isLoading = true
@@ -266,13 +266,31 @@ class FundDetailViewModel: ObservableObject {
         return selectedTimeRange
     }
     
+    var chartStartDate: Date {
+        let calendar = Calendar.current
+        let endDate = Date()
+        let daysToShow = customZoomDays ?? selectedTimeRange.days
+        return calendar.date(byAdding: .day, value: -daysToShow, to: endDate) ?? endDate
+    }
+    
+    var fundInceptionDate: Date? {
+        return fundDetails?.history.last?.dateValue
+    }
+    
+    var maxAllowedZoomDays: Int {
+        guard let inceptionDate = fundInceptionDate else { return maxZoomDays }
+        let calendar = Calendar.current
+        let daysSinceInception = calendar.dateComponents([.day], from: inceptionDate, to: Date()).day ?? 0
+        return min(maxZoomDays, daysSinceInception)
+    }
+    
     func updateZoom(dragTranslation: CGSize) {
         guard isZoomingEnabled else { return }
         
         let currentDays = customZoomDays ?? selectedTimeRange.days
         let relativeSensitivity = calculateRelativeSensitivity(for: currentDays)
         let dayChange = Int(Double(dragTranslation.width) / relativeSensitivity)
-        let newDays = max(minZoomDays, min(maxZoomDays, currentDays + dayChange))
+        let newDays = max(minZoomDays, min(maxAllowedZoomDays, currentDays + dayChange))
         
         if newDays != currentDays {
             #if !os(watchOS)
@@ -291,6 +309,20 @@ class FundDetailViewModel: ObservableObject {
     
     func resetZoom() {
         customZoomDays = nil
+    }
+    
+    func updateZoomFromStartDate(_ startDate: Date) {
+        let calendar = Calendar.current
+        let endDate = Date()
+        let days = calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 0
+        let constrainedDays = max(minZoomDays, min(maxAllowedZoomDays, days))
+        
+        if TimeRange.allCases.contains(where: { $0.days == constrainedDays }) {
+            customZoomDays = nil
+            selectedTimeRange = TimeRange(days: constrainedDays)
+        } else {
+            customZoomDays = constrainedDays
+        }
     }
     
     private func calculateRelativeSensitivity(for currentDays: Int) -> Double {

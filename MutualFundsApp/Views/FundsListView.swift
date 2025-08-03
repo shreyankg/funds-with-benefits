@@ -9,14 +9,14 @@ struct FundsListView: View {
         NavigationView {
             VStack(spacing: 0) {
                 SearchBar(text: $viewModel.searchText)
-                    .padding(.horizontal)
+                    .padding(.horizontal, 8)
                     .padding(.top, 8)
                 
                 CategoryFilterView(
                     categories: viewModel.categories,
                     selectedCategory: $viewModel.selectedCategory
                 )
-                .padding(.horizontal)
+                .padding(.horizontal, 8)
                 .padding(.vertical, 8)
                 
                 if viewModel.isLoading {
@@ -32,7 +32,7 @@ struct FundsListView: View {
                         NavigationLink(destination: FundDetailView(fund: fund)) {
                             FundRowView(fund: fund)
                         }
-                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                        .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
                     }
                     .listStyle(PlainListStyle())
                     .refreshable {
@@ -87,7 +87,7 @@ struct CategoryFilterView: View {
                     }
                 }
             }
-            .padding(.horizontal)
+            .padding(.horizontal, 4)
         }
     }
 }

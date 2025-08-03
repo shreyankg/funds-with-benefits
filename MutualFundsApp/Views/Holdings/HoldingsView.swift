@@ -2,10 +2,10 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 enum SortOption: String, CaseIterable {
-    case currentValueDesc = "Value ↓"
-    case currentValueAsc = "Value ↑"
-    case xirrDesc = "XIRR ↓"
-    case xirrAsc = "XIRR ↑"
+    case currentValueDesc = "Current Value ↓"
+    case currentValueAsc = "Current Value ↑"
+    case xirrDesc = "Annualised Return ↓"
+    case xirrAsc = "Annualised Return ↑"
 }
 
 struct HoldingsView: View {
@@ -83,12 +83,14 @@ struct HoldingsView: View {
             LazyVStack(spacing: 16) {
                 if let portfolio = holdingsManager.portfolio {
                     PortfolioSummaryView(summary: portfolio.summary)
-                        .padding(.horizontal)
+                        .padding(.horizontal, 8)
                     
                     // Holdings List
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
-                            // Sort Options (left side)
+                            Spacer()
+                            
+                            // Sort Options (center)
                             Menu {
                                 ForEach(SortOption.allCases, id: \.self) { option in
                                     Button(action: {
@@ -122,25 +124,16 @@ struct HoldingsView: View {
                             }
                             
                             Spacer()
-                            
-                            // Holdings title (center)
-                            Text("Holdings")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            
-                            Spacer()
-                            
-                            // Fund count (right)
-                            Text("\(portfolio.holdings.count) funds")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
                         }
-                        .padding(.horizontal)
+                        .padding(.horizontal, 8)
                         
                         LazyVStack(spacing: 8) {
                             ForEach(sortedHoldings(portfolio.holdings)) { holding in
-                                HoldingRowView(holding: holding)
-                                    .padding(.horizontal)
+                                HoldingRowView(
+                                    holding: holding, 
+                                    isClickable: holding.matchedSchemeCode != nil
+                                )
+                                .padding(.horizontal, 8)
                             }
                         }
                     }

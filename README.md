@@ -12,9 +12,11 @@ A comprehensive iOS app for tracking and analyzing Indian mutual funds using rea
 
 ### 📈 **Performance Analysis**
 - Interactive charts with multiple timeframes (1W, 1M, 6M, 1Y, 3Y)
+- Start date selector for custom time ranges (5D to 10Y)
+- Chart zoom functionality with drag gestures
 - Real-time NAV data and daily changes
-- Total returns and annualized returns (CAGR)
-- Volatility analysis and risk metrics
+- Total returns and CAGR calculations
+- Volatility analysis for risk assessment
 
 ### 🎯 **Detailed Fund Information**
 - Current NAV with daily change indicators
@@ -30,12 +32,16 @@ A comprehensive iOS app for tracking and analyzing Indian mutual funds using rea
 
 ### 📊 **Portfolio Holdings Management**
 - Import holdings from PDF statements (currently supports [Groww](https://groww.in/) app statements only)
+- Upload functionality available in Settings tab
 - Fund matching and portfolio tracking with intelligent filtering
-- Holdings overview and portfolio summary
-- Portfolio sorting by Value and XIRR (ascending/descending with ↑/↓ indicators)
+- Holdings overview and portfolio summary with current values
+- Center-aligned sorting by Current Value and Annualised Return (↑/↓ indicators)
+- Clickable holding cards for detailed fund views
+- Clean card design with essential metrics (units, invested→current, returns, XIRR)
 
 ### ⚙️ **Settings & Preferences**
 - Toggle to show/hide dividend funds (hidden by default for better UX)
+- Portfolio upload functionality (PDF/CSV import)
 - Settings persist across app sessions
 - Real-time filtering that affects both fund listings and portfolio matching
 
@@ -52,7 +58,7 @@ A comprehensive iOS app for tracking and analyzing Indian mutual funds using rea
 ```
 FundsWithBenefitsApp/
 ├── MutualFundsApp.swift          # App entry point (FundsWithBenefitsApp)
-├── ContentView.swift             # Main tab view
+├── ContentView.swift             # Main tab view (Funds, Portfolio, Settings, About)
 ├── Models/
 │   ├── MutualFund.swift         # Core fund model
 │   ├── NAVData.swift            # Historical NAV data
@@ -89,8 +95,10 @@ FundsWithBenefitsApp/
 ### 📊 **Performance Charts**
 - Interactive line charts using Swift Charts
 - Time period selection with dynamic data filtering
-- Zoom and pan capabilities
-- Performance metrics calculation
+- Start date picker with smart auto-dismiss
+- Drag-to-zoom functionality for custom timeframes
+- Fund age constraints to prevent invalid date ranges
+- Performance metrics calculation (Total Return, CAGR, Volatility)
 
 ### 📱 **User Experience**
 - Pull-to-refresh functionality

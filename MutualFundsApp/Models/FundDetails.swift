@@ -111,12 +111,13 @@ struct FundPerformance {
 enum TimeRange: Equatable, CaseIterable, Hashable {
     case oneWeek
     case oneMonth
+    case sixMonths
     case oneYear
     case threeYears
     case custom(days: Int)
     
     static var allCases: [TimeRange] {
-        return [.oneWeek, .oneMonth, .oneYear, .threeYears]
+        return [.oneWeek, .oneMonth, .sixMonths, .oneYear, .threeYears]
     }
     
     var days: Int {
@@ -125,6 +126,8 @@ enum TimeRange: Equatable, CaseIterable, Hashable {
             return 7
         case .oneMonth:
             return 30
+        case .sixMonths:
+            return 180
         case .oneYear:
             return 365
         case .threeYears:
@@ -140,6 +143,8 @@ enum TimeRange: Equatable, CaseIterable, Hashable {
             return "1W"
         case .oneMonth:
             return "1M"
+        case .sixMonths:
+            return "6M"
         case .oneYear:
             return "1Y"
         case .threeYears:
@@ -168,6 +173,8 @@ enum TimeRange: Equatable, CaseIterable, Hashable {
             self = .oneWeek
         case 30:
             self = .oneMonth
+        case 180:
+            self = .sixMonths
         case 365:
             self = .oneYear
         case 1095:
