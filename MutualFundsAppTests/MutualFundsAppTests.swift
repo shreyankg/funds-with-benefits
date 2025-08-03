@@ -818,6 +818,475 @@ final class MutualFundsAppTests: XCTestCase {
         XCTAssertTrue(columns.count >= 11)
     }
     
+    // MARK: - Individual Fund Calculation Tests
+    
+    func testIndividualFundCurrentValueCalculation() throws {
+        // Test with latest NAV calculation
+        var holdingWithNAV = HoldingData(
+            schemeName: "Test Fund",
+            amcName: "Test AMC",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "Test",
+            units: 100.0,
+            investedValue: 10000.0,
+            currentValue: 11000.0, // Original value
+            returns: 1000.0,
+            xirr: 15.0,
+            latestNAV: 125.50 // Latest NAV
+        )
+        
+        // Current value should be calculated using latest NAV: 100 units * 125.50 = 12550
+        XCTAssertEqual(holdingWithNAV.currentValue, 12550.0, accuracy: 0.01)
+        
+        // Test fallback to original value when no NAV
+        let holdingWithoutNAV = HoldingData(
+            schemeName: "Test Fund",
+            amcName: "Test AMC",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "Test",
+            units: 100.0,
+            investedValue: 10000.0,
+            currentValue: 11000.0, // Original value
+            returns: 1000.0,
+            xirr: 15.0
+            // No latestNAV provided
+        )
+        
+        // Should fallback to original current value
+        XCTAssertEqual(holdingWithoutNAV.currentValue, 11000.0, accuracy: 0.01)
+    }
+    
+    func testIndividualFundReturnsCalculation() throws {
+        let holding = HoldingData(
+            schemeName: "Test Fund",
+            amcName: "Test AMC",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "Test",
+            units: 100.0,
+            investedValue: 10000.0,
+            currentValue: 11000.0,
+            returns: 1000.0,
+            xirr: 15.0,
+            latestNAV: 125.50 // 100 units * 125.50 = 12550 current value
+        )
+        
+        // Returns = current value - invested value = 12550 - 10000 = 2550
+        XCTAssertEqual(holding.returns, 2550.0, accuracy: 0.01)
+    }
+    
+    func testIndividualFundReturnsPercentageCalculation() throws {
+        let holding = HoldingData(
+            schemeName: "Test Fund",
+            amcName: "Test AMC",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "Test",
+            units: 100.0,
+            investedValue: 10000.0,
+            currentValue: 11000.0,
+            returns: 1000.0,
+            xirr: 15.0,
+            latestNAV: 125.50 // Current value = 12550
+        )
+        
+        // Returns % = (returns / invested) * 100 = (2550 / 10000) * 100 = 25.5%
+        XCTAssertEqual(holding.returnsPercentage, 25.5, accuracy: 0.01)
+        
+        // Test zero invested value edge case
+        let zeroInvestedHolding = HoldingData(
+            schemeName: "Test Fund",
+            amcName: "Test AMC",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "Test",
+            units: 100.0,
+            investedValue: 0.0,
+            currentValue: 1000.0,
+            returns: 1000.0,
+            xirr: 15.0
+        )
+        
+        XCTAssertEqual(zeroInvestedHolding.returnsPercentage, 0.0, accuracy: 0.01)
+    }
+    
+    func testIndividualFundXIRRCalculation() throws {
+        let calendar = Calendar.current
+        let statementDate = calendar.date(byAdding: .year, value: -2, to: Date())! // 2 years ago
+        
+        let holding = HoldingData(
+            schemeName: "Test Fund",
+            amcName: "Test AMC",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "Test",
+            units: 100.0,
+            investedValue: 10000.0,
+            currentValue: 11000.0,
+            returns: 1000.0,
+            xirr: 15.0, // Original XIRR
+            latestNAV: 125.50, // Current value = 12550
+            statementDate: statementDate
+        )
+        
+        // XIRR calculation: ((12550/10000)^(1/2) - 1) * 100
+        // = (1.255^0.5 - 1) * 100 ≈ 12.02%
+        XCTAssertEqual(holding.xirr, 12.02, accuracy: 0.5) // Allow some tolerance for date calculations
+        
+        // Test fallback to original XIRR when no statement date
+        let holdingWithoutDate = HoldingData(
+            schemeName: "Test Fund",
+            amcName: "Test AMC",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "Test",
+            units: 100.0,
+            investedValue: 10000.0,
+            currentValue: 11000.0,
+            returns: 1000.0,
+            xirr: 15.0 // Original XIRR
+            // No statementDate provided
+        )
+        
+        XCTAssertEqual(holdingWithoutDate.xirr, 15.0, accuracy: 0.01)
+    }
+    
+    func testIndividualFundNAVPerUnitCalculation() throws {
+        let holding = HoldingData(
+            schemeName: "Test Fund",
+            amcName: "Test AMC",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "Test",
+            units: 100.0,
+            investedValue: 10000.0,
+            currentValue: 11000.0,
+            returns: 1000.0,
+            xirr: 15.0,
+            latestNAV: 125.50
+        )
+        
+        // NAV per unit = current value / units = 12550 / 100 = 125.50
+        XCTAssertEqual(holding.navPerUnit, 125.50, accuracy: 0.01)
+        
+        // Test zero units edge case
+        let zeroUnitsHolding = HoldingData(
+            schemeName: "Test Fund",
+            amcName: "Test AMC",
+            category: "Equity",
+            subCategory: "Large Cap",
+            folioNumber: "123456",
+            source: "Test",
+            units: 0.0,
+            investedValue: 10000.0,
+            currentValue: 11000.0,
+            returns: 1000.0,
+            xirr: 15.0
+        )
+        
+        XCTAssertEqual(zeroUnitsHolding.navPerUnit, 0.0, accuracy: 0.01)
+    }
+    
+    // MARK: - Portfolio Banner Calculation Tests
+    
+    func testPortfolioSummaryTotalInvestments() throws {
+        let holdings = [
+            HoldingData(
+                schemeName: "Fund 1",
+                amcName: "AMC 1",
+                category: "Equity",
+                subCategory: "Large Cap",
+                folioNumber: "123456",
+                source: "Groww",
+                units: 100.0,
+                investedValue: 10000.0,
+                currentValue: 12000.0,
+                returns: 2000.0,
+                xirr: 15.0,
+                latestNAV: 130.0 // Current value = 100 * 130 = 13000
+            ),
+            HoldingData(
+                schemeName: "Fund 2",
+                amcName: "AMC 2",
+                category: "Debt",
+                subCategory: "Liquid",
+                folioNumber: "789012",
+                source: "External",
+                units: 50.0,
+                investedValue: 5000.0,
+                currentValue: 5250.0,
+                returns: 250.0,
+                xirr: 8.0,
+                latestNAV: 108.0 // Current value = 50 * 108 = 5400
+            )
+        ]
+        
+        let summary = PortfolioSummary(holdings: holdings)
+        
+        // Total investments = 10000 + 5000 = 15000
+        XCTAssertEqual(summary.totalInvestments, 15000.0, accuracy: 0.01)
+    }
+    
+    func testPortfolioSummaryCurrentPortfolioValue() throws {
+        let holdings = [
+            HoldingData(
+                schemeName: "Fund 1",
+                amcName: "AMC 1",
+                category: "Equity",
+                subCategory: "Large Cap",
+                folioNumber: "123456",
+                source: "Groww",
+                units: 100.0,
+                investedValue: 10000.0,
+                currentValue: 12000.0,
+                returns: 2000.0,
+                xirr: 15.0,
+                latestNAV: 130.0 // Current value = 100 * 130 = 13000
+            ),
+            HoldingData(
+                schemeName: "Fund 2",
+                amcName: "AMC 2",
+                category: "Debt",
+                subCategory: "Liquid",
+                folioNumber: "789012",
+                source: "External",
+                units: 50.0,
+                investedValue: 5000.0,
+                currentValue: 5250.0,
+                returns: 250.0,
+                xirr: 8.0,
+                latestNAV: 108.0 // Current value = 50 * 108 = 5400
+            )
+        ]
+        
+        let summary = PortfolioSummary(holdings: holdings)
+        
+        // Current portfolio value = 13000 + 5400 = 18400
+        XCTAssertEqual(summary.currentPortfolioValue, 18400.0, accuracy: 0.01)
+    }
+    
+    func testPortfolioSummaryTotalReturns() throws {
+        let holdings = [
+            HoldingData(
+                schemeName: "Fund 1",
+                amcName: "AMC 1",
+                category: "Equity",
+                subCategory: "Large Cap",
+                folioNumber: "123456",
+                source: "Groww",
+                units: 100.0,
+                investedValue: 10000.0,
+                currentValue: 12000.0,
+                returns: 2000.0,
+                xirr: 15.0,
+                latestNAV: 130.0 // Current value = 13000, returns = 13000 - 10000 = 3000
+            ),
+            HoldingData(
+                schemeName: "Fund 2",
+                amcName: "AMC 2",
+                category: "Debt",
+                subCategory: "Liquid",
+                folioNumber: "789012",
+                source: "External",
+                units: 50.0,
+                investedValue: 5000.0,
+                currentValue: 5250.0,
+                returns: 250.0,
+                xirr: 8.0,
+                latestNAV: 108.0 // Current value = 5400, returns = 5400 - 5000 = 400
+            )
+        ]
+        
+        let summary = PortfolioSummary(holdings: holdings)
+        
+        // Total returns = 3000 + 400 = 3400
+        XCTAssertEqual(summary.totalReturns, 3400.0, accuracy: 0.01)
+    }
+    
+    func testPortfolioSummaryReturnsPercentage() throws {
+        let holdings = [
+            HoldingData(
+                schemeName: "Fund 1",
+                amcName: "AMC 1",
+                category: "Equity",
+                subCategory: "Large Cap",
+                folioNumber: "123456",
+                source: "Groww",
+                units: 100.0,
+                investedValue: 10000.0,
+                currentValue: 12000.0,
+                returns: 2000.0,
+                xirr: 15.0,
+                latestNAV: 130.0 // Current value = 13000, returns = 3000
+            ),
+            HoldingData(
+                schemeName: "Fund 2",
+                amcName: "AMC 2",
+                category: "Debt",
+                subCategory: "Liquid",
+                folioNumber: "789012",
+                source: "External",
+                units: 50.0,
+                investedValue: 5000.0,
+                currentValue: 5250.0,
+                returns: 250.0,
+                xirr: 8.0,
+                latestNAV: 108.0 // Current value = 5400, returns = 400
+            )
+        ]
+        
+        let summary = PortfolioSummary(holdings: holdings)
+        
+        // Returns % = (total returns / total invested) * 100 = (3400 / 15000) * 100 = 22.67%
+        XCTAssertEqual(summary.returnsPercentage, 22.67, accuracy: 0.01)
+        
+        // Test edge case with zero investment
+        let emptyHoldings: [HoldingData] = []
+        let emptySummary = PortfolioSummary(holdings: emptyHoldings)
+        XCTAssertEqual(emptySummary.returnsPercentage, 0.0, accuracy: 0.01)
+    }
+    
+    func testPortfolioSummaryOverallXIRR() throws {
+        let holdings = [
+            HoldingData(
+                schemeName: "Fund 1",
+                amcName: "AMC 1",
+                category: "Equity",
+                subCategory: "Large Cap",
+                folioNumber: "123456",
+                source: "Groww",
+                units: 100.0,
+                investedValue: 10000.0,
+                currentValue: 12000.0,
+                returns: 2000.0,
+                xirr: 15.0 // 15% XIRR
+            ),
+            HoldingData(
+                schemeName: "Fund 2",
+                amcName: "AMC 2",
+                category: "Debt",
+                subCategory: "Liquid",
+                folioNumber: "789012",
+                source: "External",
+                units: 50.0,
+                investedValue: 5000.0,
+                currentValue: 5250.0,
+                returns: 250.0,
+                xirr: 8.0 // 8% XIRR
+            )
+        ]
+        
+        let summary = PortfolioSummary(holdings: holdings)
+        
+        // Weighted XIRR = (10000/15000 * 15) + (5000/15000 * 8) = (0.667 * 15) + (0.333 * 8) = 10.0 + 2.67 = 12.67%
+        XCTAssertEqual(summary.overallXIRR, 12.67, accuracy: 0.01)
+        
+        // Test edge case with zero investment
+        let emptyHoldings: [HoldingData] = []
+        let emptySummary = PortfolioSummary(holdings: emptyHoldings)
+        XCTAssertEqual(emptySummary.overallXIRR, 0.0, accuracy: 0.01)
+    }
+    
+    func testPortfolioSummaryHoldingsCount() throws {
+        let holdings = [
+            HoldingData(
+                schemeName: "Fund 1",
+                amcName: "AMC 1",
+                category: "Equity",
+                subCategory: "Large Cap",
+                folioNumber: "123456",
+                source: "Groww",
+                units: 100.0,
+                investedValue: 10000.0,
+                currentValue: 12000.0,
+                returns: 2000.0,
+                xirr: 15.0
+            ),
+            HoldingData(
+                schemeName: "Fund 2",
+                amcName: "AMC 2",
+                category: "Debt",
+                subCategory: "Liquid",
+                folioNumber: "789012",
+                source: "External",
+                units: 50.0,
+                investedValue: 5000.0,
+                currentValue: 5250.0,
+                returns: 250.0,
+                xirr: 8.0
+            ),
+            HoldingData(
+                schemeName: "Fund 3",
+                amcName: "AMC 3",
+                category: "Hybrid",
+                subCategory: "Balanced",
+                folioNumber: "345678",
+                source: "Groww",
+                units: 75.0,
+                investedValue: 7500.0,
+                currentValue: 8000.0,
+                returns: 500.0,
+                xirr: 6.5
+            )
+        ]
+        
+        let summary = PortfolioSummary(holdings: holdings)
+        
+        XCTAssertEqual(summary.holdingsCount, 3)
+        
+        // Test empty portfolio
+        let emptyHoldings: [HoldingData] = []
+        let emptySummary = PortfolioSummary(holdings: emptyHoldings)
+        XCTAssertEqual(emptySummary.holdingsCount, 0)
+    }
+    
+    func testPortfolioSummaryIntegrationWithLatestNAV() throws {
+        // Test that portfolio summary correctly uses live calculations with latest NAV
+        let calendar = Calendar.current
+        let statementDate = calendar.date(byAdding: .year, value: -1, to: Date())! // 1 year ago
+        
+        let holdings = [
+            HoldingData(
+                schemeName: "Test Equity Fund",
+                amcName: "Test AMC",
+                category: "Equity",
+                subCategory: "Large Cap",
+                folioNumber: "123456",
+                source: "Groww",
+                units: 100.0,
+                investedValue: 10000.0,
+                currentValue: 11000.0, // Original value
+                returns: 1000.0, // Original returns
+                xirr: 10.0, // Original XIRR
+                latestNAV: 140.0, // Latest NAV - current value = 100 * 140 = 14000
+                statementDate: statementDate
+            )
+        ]
+        
+        let summary = PortfolioSummary(holdings: holdings)
+        
+        // Verify that summary uses live calculations
+        XCTAssertEqual(summary.totalInvestments, 10000.0, accuracy: 0.01)
+        XCTAssertEqual(summary.currentPortfolioValue, 14000.0, accuracy: 0.01) // Uses latest NAV
+        XCTAssertEqual(summary.totalReturns, 4000.0, accuracy: 0.01) // 14000 - 10000
+        XCTAssertEqual(summary.returnsPercentage, 40.0, accuracy: 0.01) // (4000/10000) * 100
+        
+        // XIRR should be calculated using statement date and latest NAV
+        // ((14000/10000)^(1/1) - 1) * 100 = 40%
+        XCTAssertEqual(summary.overallXIRR, 40.0, accuracy: 1.0) // Allow tolerance for date calculations
+        XCTAssertEqual(summary.holdingsCount, 1)
+    }
+    
     // MARK: - Holdings Manager Integration Tests
     
     func testHoldingsManagerPortfolioStorage() throws {
