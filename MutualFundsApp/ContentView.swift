@@ -48,29 +48,6 @@ struct SettingsView: View {
                 }
                 
                 Section {
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            Image(systemName: "info.circle.fill")
-                                .foregroundColor(.blue)
-                            Text("About Dividend Funds")
-                                .font(.headline)
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("• **Dividend plans** distribute profits periodically to investors")
-                            Text("• **Growth plans** reinvest profits, leading to NAV appreciation")
-                            Text("• Most investors prefer Growth plans for better tax efficiency")
-                            Text("• Dividend distributions are subject to tax implications")
-                        }
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    }
-                    .padding(.vertical, 8)
-                } header: {
-                    Text("Information")
-                }
-                
-                Section {
                     Button(action: { showingFilePicker = true }) {
                         HStack {
                             Image(systemName: "doc.badge.plus")
