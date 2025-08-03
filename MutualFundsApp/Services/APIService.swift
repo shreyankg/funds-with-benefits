@@ -295,17 +295,17 @@ class FundDetailViewModel: ObservableObject {
     
     private func calculateRelativeSensitivity(for currentDays: Int) -> Double {
         // Adjust sensitivity based on time frame for optimal control:
-        // - Short periods (< 1 month): Ultra-high sensitivity for precise control
+        // - Short periods (< 1 month): Lower sensitivity for precise control
         // - Medium periods (1 month - 1 year): Standard sensitivity 
-        // - Long periods (> 1 year): Lower sensitivity for broader changes
+        // - Long periods (> 1 year): Higher sensitivity for broader changes
         
         switch currentDays {
-        case 0..<30:        // < 1 month: Ultra-high sensitivity (very precise)
-            return 0.05
+        case 0..<30:        // < 1 month: Higher sensitivity (easy to zoom)
+            return 5.0
         case 30..<365:      // 1 month - 1 year: Standard sensitivity
             return 1.0
-        default:            // > 1 year: Lower sensitivity (broad changes)
-            return 5.0
+        default:            // > 1 year: Lower sensitivity (precise control)
+            return 0.05
         }
     }
 }
