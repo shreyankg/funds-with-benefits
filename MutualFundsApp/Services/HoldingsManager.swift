@@ -111,6 +111,12 @@ class HoldingsManager: ObservableObject {
         do {
             // Perform heavy operations in background
             let result = try await Task.detached(priority: .userInitiated) {
+                // Clear individual fund caches for all matched holdings to force fresh NAV data
+                let matchedSchemeCodes = currentPortfolio.holdings.compactMap { $0.matchedSchemeCode }
+                if !matchedSchemeCodes.isEmpty {
+                    DataCache.shared.clearFundHistories(for: matchedSchemeCodes)
+                }
+                
                 // Try to get cached funds first, fallback to API if cache is empty
                 var availableFunds = DataCache.shared.getCachedFundsList()
                 
@@ -127,6 +133,7 @@ class HoldingsManager: ObservableObject {
                 let matchedHoldings = await self.fundMatcher.matchHoldingsWithFunds(currentPortfolio.holdings, availableFunds: funds)
                 
                 // Update holdings with latest NAV data for live calculations
+                // Since we cleared the cache above, this will fetch fresh data from API
                 let updatedHoldings = try await self.fundMatcher.updateHoldingsWithLatestNAV(matchedHoldings)
                 
                 return Portfolio(holdings: updatedHoldings)

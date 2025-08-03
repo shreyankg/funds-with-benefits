@@ -55,9 +55,9 @@ class APIService: ObservableObject {
         }
     }
     
-    func fetchAllFunds() async throws -> [MutualFund] {
-        // Try to get cached data first
-        if let cachedFunds = DataCache.shared.getCachedFundsList() {
+    func fetchAllFunds(forceRefresh: Bool = false) async throws -> [MutualFund] {
+        // Try to get cached data first unless force refresh is requested
+        if !forceRefresh, let cachedFunds = DataCache.shared.getCachedFundsList() {
             return cachedFunds
         }
         
@@ -80,9 +80,9 @@ class APIService: ObservableObject {
         }
     }
     
-    func fetchFundHistory(schemeCode: String) async throws -> FundHistory {
-        // Try to get cached data first
-        if let cachedHistory = DataCache.shared.getCachedFundHistory(for: schemeCode) {
+    func fetchFundHistory(schemeCode: String, forceRefresh: Bool = false) async throws -> FundHistory {
+        // Try to get cached data first unless force refresh is requested
+        if !forceRefresh, let cachedHistory = DataCache.shared.getCachedFundHistory(for: schemeCode) {
             return cachedHistory
         }
         
@@ -105,8 +105,8 @@ class APIService: ObservableObject {
         }
     }
     
-    func fetchFundDetails(for fund: MutualFund) async throws -> FundDetails {
-        let history = try await fetchFundHistory(schemeCode: fund.schemeCode)
+    func fetchFundDetails(for fund: MutualFund, forceRefresh: Bool = false) async throws -> FundDetails {
+        let history = try await fetchFundHistory(schemeCode: fund.schemeCode, forceRefresh: forceRefresh)
         return FundDetails(fund: fund, history: history.data, meta: history.meta)
     }
 }
@@ -200,13 +200,16 @@ class FundDetailViewModel: ObservableObject {
     
     private let apiService = APIService.shared
     
-    func loadFundDetails(for fund: MutualFund) {
+    func loadFundDetails(for fund: MutualFund, forceRefresh: Bool = false) {
         isLoading = true
         errorMessage = nil
         
         Task {
             do {
-                let details = try await apiService.fetchFundDetails(for: fund)
+                // Check if we should force refresh or if cache is stale
+                let shouldForceRefresh = forceRefresh || shouldRefreshFundCache(for: fund.schemeCode)
+                
+                let details = try await apiService.fetchFundDetails(for: fund, forceRefresh: shouldForceRefresh)
                 fundDetails = details
                 isLoading = false
             } catch {
@@ -214,6 +217,17 @@ class FundDetailViewModel: ObservableObject {
                 isLoading = false
             }
         }
+    }
+    
+    private func shouldRefreshFundCache(for schemeCode: String) -> Bool {
+        // For individual fund views, use a more aggressive cache policy (4 hours)
+        let maxCacheAge: TimeInterval = 4 * 60 * 60 // 4 hours
+        return !DataCache.shared.isFundHistoryCacheFresh(for: schemeCode, maxAge: maxCacheAge)
+    }
+    
+    func refreshFundDetails() {
+        guard let currentFund = fundDetails?.fund else { return }
+        loadFundDetails(for: currentFund, forceRefresh: true)
     }
     
     var currentPerformance: FundPerformance? {

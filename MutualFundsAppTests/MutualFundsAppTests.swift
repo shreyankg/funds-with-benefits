@@ -418,6 +418,104 @@ final class MutualFundsAppTests: XCTestCase {
         cache.clearCache()
     }
     
+    func testCacheBustingFunctionality() throws {
+        let cache = DataCache.shared
+        
+        // Test clearing specific fund history
+        let testHistory1 = createTestFundHistory(schemeCode: "123456")
+        let testHistory2 = createTestFundHistory(schemeCode: "123457")
+        
+        cache.cacheFundHistory(testHistory1, for: "123456")
+        cache.cacheFundHistory(testHistory2, for: "123457")
+        
+        // Verify both are cached
+        XCTAssertNotNil(cache.getCachedFundHistory(for: "123456"))
+        XCTAssertNotNil(cache.getCachedFundHistory(for: "123457"))
+        
+        // Clear specific fund history
+        cache.clearFundHistory(for: "123456")
+        
+        // Only the specific fund should be cleared
+        XCTAssertNil(cache.getCachedFundHistory(for: "123456"))
+        XCTAssertNotNil(cache.getCachedFundHistory(for: "123457"))
+        
+        // Clean up
+        cache.clearCache()
+    }
+    
+    func testCacheAgeDetection() throws {
+        let cache = DataCache.shared
+        cache.clearCache()
+        
+        let testFunds = [MutualFund(schemeCode: "123456", schemeName: "Test Fund")]
+        
+        // Cache the funds
+        cache.cacheFundsList(testFunds)
+        
+        // Should be fresh immediately
+        XCTAssertTrue(cache.isFundsListCacheFresh())
+        
+        // Test with specific fund history
+        let testHistory = createTestFundHistory(schemeCode: "123456")
+        cache.cacheFundHistory(testHistory, for: "123456")
+        
+        XCTAssertTrue(cache.isFundHistoryCacheFresh(for: "123456"))
+        
+        // Test non-existent cache
+        XCTAssertFalse(cache.isFundHistoryCacheFresh(for: "nonexistent"))
+        
+        // Clean up
+        cache.clearCache()
+    }
+    
+    func testClearMultipleFundHistories() throws {
+        let cache = DataCache.shared
+        cache.clearCache()
+        
+        // Cache multiple fund histories
+        let schemeCodes = ["123456", "123457", "123458"]
+        
+        for schemeCode in schemeCodes {
+            let testHistory = createTestFundHistory(schemeCode: schemeCode)
+            cache.cacheFundHistory(testHistory, for: schemeCode)
+        }
+        
+        // Verify all are cached
+        for schemeCode in schemeCodes {
+            XCTAssertNotNil(cache.getCachedFundHistory(for: schemeCode))
+        }
+        
+        // Clear specific schemes
+        cache.clearFundHistories(for: ["123456", "123458"])
+        
+        // Only specific funds should be cleared
+        XCTAssertNil(cache.getCachedFundHistory(for: "123456"))
+        XCTAssertNotNil(cache.getCachedFundHistory(for: "123457"))
+        XCTAssertNil(cache.getCachedFundHistory(for: "123458"))
+        
+        // Clean up
+        cache.clearCache()
+    }
+    
+    private func createTestFundHistory(schemeCode: String) -> FundHistory {
+        return FundHistory(
+            meta: FundMeta(
+                fund_house: "Test Fund House",
+                scheme_type: "Open Ended",
+                scheme_category: "Equity",
+                scheme_code: schemeCode,
+                scheme_name: "Test Fund \(schemeCode)",
+                isin_growth: "INF\(schemeCode)",
+                isin_div_reinvestment: nil
+            ),
+            data: [
+                NAVData(date: "27-01-2025", nav: "100.00"),
+                NAVData(date: "26-01-2025", nav: "99.50")
+            ],
+            status: "SUCCESS"
+        )
+    }
+    
     // MARK: - Performance Tests
     
     func testFundFilteringPerformance() throws {

@@ -90,6 +90,26 @@ class DataCache {
         }
     }
     
+    func clearFundHistory(for schemeCode: String) {
+        let key = "\(cacheKeyPrefix)history_\(schemeCode)"
+        userDefaults.removeObject(forKey: key)
+    }
+    
+    func clearFundHistories(for schemeCodes: [String]) {
+        for schemeCode in schemeCodes {
+            clearFundHistory(for: schemeCode)
+        }
+    }
+    
+    func clearAllFundHistories() {
+        let keys = userDefaults.dictionaryRepresentation().keys
+        for key in keys {
+            if key.hasPrefix("\(cacheKeyPrefix)history_") {
+                userDefaults.removeObject(forKey: key)
+            }
+        }
+    }
+    
     func clearExpiredCache() {
         let keys = userDefaults.dictionaryRepresentation().keys
         for key in keys {
@@ -125,6 +145,32 @@ class DataCache {
         formatter.allowedUnits = [.useKB, .useMB]
         formatter.countStyle = .file
         return formatter.string(fromByteCount: Int64(totalSize))
+    }
+    
+    // MARK: - Cache Age Detection
+    
+    func isFundsListCacheFresh(maxAge: TimeInterval? = nil) -> Bool {
+        let threshold = maxAge ?? expirationTimeInterval
+        return isCacheFresh(forKey: "\(cacheKeyPrefix)fundsList", maxAge: threshold)
+    }
+    
+    func isFundHistoryCacheFresh(for schemeCode: String, maxAge: TimeInterval? = nil) -> Bool {
+        let threshold = maxAge ?? expirationTimeInterval
+        return isCacheFresh(forKey: "\(cacheKeyPrefix)history_\(schemeCode)", maxAge: threshold)
+    }
+    
+    private func isCacheFresh(forKey key: String, maxAge: TimeInterval) -> Bool {
+        guard let data = userDefaults.data(forKey: key) else {
+            return false
+        }
+        
+        do {
+            let cacheEntry = try JSONDecoder().decode(CacheEntry.self, from: data)
+            let age = Date().timeIntervalSince(cacheEntry.timestamp)
+            return age <= maxAge
+        } catch {
+            return false
+        }
     }
 }
 
