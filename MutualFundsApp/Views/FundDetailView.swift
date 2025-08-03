@@ -20,19 +20,27 @@ struct FundDetailView: View {
                     FundHeaderView(details: details)
                     
                     TimeRangeSelector(
-                        selectedRange: $viewModel.selectedTimeRange
+                        selectedRange: $viewModel.selectedTimeRange,
+                        currentTimeRange: viewModel.currentTimeRange,
+                        onSelectionChange: { range in
+                            viewModel.selectedTimeRange = range
+                            viewModel.resetZoom()
+                        }
                     )
                     
                     PerformanceChartView(
                         data: viewModel.chartData,
-                        selectedRange: viewModel.selectedTimeRange
+                        selectedRange: viewModel.currentTimeRange,
+                        onZoomGesture: { translation in
+                            viewModel.updateZoom(dragTranslation: translation)
+                        }
                     )
                     .frame(minHeight: 300, maxHeight: 600)
                     
                     if let performance = viewModel.currentPerformance {
                         PerformanceMetricsView(
                             performance: performance,
-                            timeRange: viewModel.selectedTimeRange
+                            timeRange: viewModel.currentTimeRange
                         )
                     }
                     
@@ -113,39 +121,94 @@ struct FundHeaderView: View {
 
 struct TimeRangeSelector: View {
     @Binding var selectedRange: TimeRange
+    let currentTimeRange: TimeRange
+    let onSelectionChange: (TimeRange) -> Void
     
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
-                ForEach(TimeRange.allCases, id: \.self) { range in
-                    Button(action: {
-                        selectedRange = range
-                    }) {
-                        Text(range.displayName)
+                ForEach(Array(sortedRangesWithCustom.enumerated()), id: \.element) { index, timeRange in
+                    if case .custom = timeRange {
+                        // Custom range display
+                        Text(timeRange.displayName)
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
-                            .background(
-                                selectedRange == range ?
-                                Color.blue : Color.gray.opacity(0.2)
-                            )
-                            .foregroundColor(
-                                selectedRange == range ?
-                                .white : .primary
-                            )
+                            .background(Color.orange.opacity(0.8))
+                            .foregroundColor(.white)
                             .clipShape(Capsule())
+                    } else {
+                        // Standard range button
+                        Button(action: {
+                            onSelectionChange(timeRange)
+                        }) {
+                            Text(timeRange.displayName)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(
+                                    isRangeActive(timeRange) ?
+                                    Color.blue : Color.gray.opacity(0.2)
+                                )
+                                .foregroundColor(
+                                    isRangeActive(timeRange) ?
+                                    .white : .primary
+                                )
+                                .clipShape(Capsule())
+                        }
                     }
                 }
             }
             .padding(.horizontal)
         }
     }
+    
+    private var sortedRangesWithCustom: [TimeRange] {
+        var ranges: [TimeRange] = []
+        let standardRanges = TimeRange.allCases.sorted { $0.days < $1.days }
+        
+        if isCustomRange {
+            let customDays = currentTimeRange.days
+            var inserted = false
+            
+            for standardRange in standardRanges {
+                // Insert custom range before the first standard range that has more days
+                if !inserted && customDays < standardRange.days {
+                    ranges.append(currentTimeRange)
+                    inserted = true
+                }
+                ranges.append(standardRange)
+            }
+            
+            // If custom range has more days than all standard ranges, add it at the end
+            if !inserted {
+                ranges.append(currentTimeRange)
+            }
+        } else {
+            ranges = standardRanges
+        }
+        
+        return ranges
+    }
+    
+    private func isRangeActive(_ range: TimeRange) -> Bool {
+        return currentTimeRange == range
+    }
+    
+    private var isCustomRange: Bool {
+        return !TimeRange.allCases.contains(currentTimeRange)
+    }
 }
 
 struct PerformanceChartView: View {
     let data: [NAVData]
     let selectedRange: TimeRange
+    let onZoomGesture: ((CGSize) -> Void)?
+    
+    @State private var dragOffset: CGSize = .zero
+    @State private var isDragging: Bool = false
     
     private var chartColor: Color {
         guard let firstValue = data.first?.navValue,
@@ -158,8 +221,21 @@ struct PerformanceChartView: View {
     var body: some View {
         GeometryReader { geometry in
             VStack(alignment: .leading, spacing: 12) {
-                Text("Performance Chart")
-                    .font(.headline)
+                HStack {
+                    Text("Performance Chart")
+                        .font(.headline)
+                    
+                    Spacer()
+                    
+                    Text(selectedRange.displayName)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color.blue.opacity(0.1))
+                        .foregroundColor(.blue)
+                        .clipShape(Capsule())
+                }
                 
                 if data.isEmpty {
                     Text("No data available for selected period")
@@ -187,6 +263,23 @@ struct PerformanceChartView: View {
                             )
                         )
                     }
+                    .opacity(isDragging ? 0.7 : 1.0)
+                    .scaleEffect(isDragging ? 1.02 : 1.0)
+                    .animation(.easeInOut(duration: 0.2), value: isDragging)
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                if !isDragging {
+                                    isDragging = true
+                                }
+                                dragOffset = value.translation
+                            }
+                            .onEnded { value in
+                                isDragging = false
+                                onZoomGesture?(value.translation)
+                                dragOffset = .zero
+                            }
+                    )
                     .frame(height: max(250, geometry.size.height * 0.7))
                     .chartXAxis {
                         AxisMarks(values: .stride(by: xAxisStride)) { value in
@@ -239,29 +332,36 @@ struct PerformanceChartView: View {
     }
     
     private var xAxisStride: Calendar.Component {
-        switch selectedRange {
-        case .oneWeek: return .day
-        case .oneMonth: return .weekOfYear
-        case .sixMonths: return .month
-        case .oneYear: return .month
-        case .threeYears: return .year
+        let days = selectedRange.days
+        if days <= 7 {
+            return .day
+        } else if days <= 30 {
+            return .weekOfYear
+        } else if days <= 180 {
+            return .month
+        } else if days <= 365 {
+            return .month
+        } else {
+            return .year
         }
     }
     
     private func formatXAxisDate(_ date: Date) -> String {
         let formatter = DateFormatter()
-        switch selectedRange {
-        case .oneWeek:
+        let days = selectedRange.days
+        
+        if days <= 7 {
             formatter.dateFormat = "MMM d"
-        case .oneMonth:
+        } else if days <= 30 {
             formatter.dateFormat = "MMM d"
-        case .sixMonths:
+        } else if days <= 180 {
             formatter.dateFormat = "MMM"
-        case .oneYear:
+        } else if days <= 365 {
             formatter.dateFormat = "MMM"
-        case .threeYears:
+        } else {
             formatter.dateFormat = "yyyy"
         }
+        
         return formatter.string(from: date)
     }
 }

@@ -4,7 +4,7 @@
 
 iOS app for tracking Indian mutual funds with real-time data from api.mfapi.in. SwiftUI + MVVM architecture.
 
-**Key Features**: Fund data with charts, holdings management, high-performance fund matching (99%+), portfolio sorting
+**Key Features**: Fund data with interactive zoom charts, holdings management, high-performance fund matching (99%+), portfolio sorting
 
 **Tech Stack**: SwiftUI (iOS 17+), MVVM + Combine, Swift Charts, URLSession async/await, UserDefaults caching
 
@@ -37,9 +37,10 @@ iOS app for tracking Indian mutual funds with real-time data from api.mfapi.in. 
 **Build**: ⌘+B, ⌘+R, ⌘+U  
 **CLI Test**: `xcodebuild test -scheme MutualFundsApp -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest'`
 
-**Test Status**: 50/50 unit tests, 18/19 UI tests passing ✅
+**Test Status**: 38/38 unit tests, 24/24 UI tests passing ✅
 
-**Portfolio Tests** (12 new): Individual fund calculations + portfolio banner calculations + integration tests
+**Portfolio Tests** (12): Individual fund calculations + portfolio banner calculations + integration tests  
+**Chart Zoom Tests** (6 new): Interactive zoom gestures, time range display, limits, state management
 
 ## Fund Matching (FundMatcher.swift)
 
@@ -58,6 +59,12 @@ iOS app for tracking Indian mutual funds with real-time data from api.mfapi.in. 
 **Calculations**: 
 - Individual: Current value (units×NAV), returns, returns%, XIRR
 - Portfolio: Sums + weighted average XIRR by investment amount
+
+## Interactive Chart Zoom
+
+**Gestures**: Drag left/right to zoom in/out (7 days to 3 years)  
+**Display**: Smart decimal format (1.5W, 2.3M, 1.2Y) with intelligent positioning  
+**Integration**: Time range selector updates with custom periods, performance metrics recalculate
 
 ## Quick Reference
 

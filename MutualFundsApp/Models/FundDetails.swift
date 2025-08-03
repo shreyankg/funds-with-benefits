@@ -63,20 +63,7 @@ struct FundDetails {
     private func getDataForPeriod(_ period: TimeRange) -> [NAVData] {
         let calendar = Calendar.current
         let endDate = Date()
-        let startDate: Date
-        
-        switch period {
-        case .oneWeek:
-            startDate = calendar.date(byAdding: .day, value: -7, to: endDate) ?? endDate
-        case .oneMonth:
-            startDate = calendar.date(byAdding: .month, value: -1, to: endDate) ?? endDate
-        case .sixMonths:
-            startDate = calendar.date(byAdding: .month, value: -6, to: endDate) ?? endDate
-        case .oneYear:
-            startDate = calendar.date(byAdding: .year, value: -1, to: endDate) ?? endDate
-        case .threeYears:
-            startDate = calendar.date(byAdding: .year, value: -3, to: endDate) ?? endDate
-        }
+        let startDate = calendar.date(byAdding: .day, value: -period.days, to: endDate) ?? endDate
         
         return history.filter { navData in
             navData.dateValue >= startDate
@@ -121,14 +108,72 @@ struct FundPerformance {
     }
 }
 
-enum TimeRange: String, CaseIterable {
-    case oneWeek = "1W"
-    case oneMonth = "1M"
-    case sixMonths = "6M"
-    case oneYear = "1Y"
-    case threeYears = "3Y"
+enum TimeRange: Equatable, CaseIterable, Hashable {
+    case oneWeek
+    case oneMonth
+    case oneYear
+    case threeYears
+    case custom(days: Int)
+    
+    static var allCases: [TimeRange] {
+        return [.oneWeek, .oneMonth, .oneYear, .threeYears]
+    }
+    
+    var days: Int {
+        switch self {
+        case .oneWeek:
+            return 7
+        case .oneMonth:
+            return 30
+        case .oneYear:
+            return 365
+        case .threeYears:
+            return 1095
+        case .custom(let days):
+            return days
+        }
+    }
     
     var displayName: String {
-        return rawValue
+        switch self {
+        case .oneWeek:
+            return "1W"
+        case .oneMonth:
+            return "1M"
+        case .oneYear:
+            return "1Y"
+        case .threeYears:
+            return "3Y"
+        case .custom(let days):
+            return formatCustomPeriod(days: days)
+        }
+    }
+    
+    private func formatCustomPeriod(days: Int) -> String {
+        if days < 30 {
+            let weeks = Double(days) / 7.0
+            return String(format: "%.1fW", weeks)
+        } else if days < 365 {
+            let months = Double(days) / 30.0
+            return String(format: "%.1fM", months)
+        } else {
+            let years = Double(days) / 365.0
+            return String(format: "%.1fY", years)
+        }
+    }
+    
+    init(days: Int) {
+        switch days {
+        case 7:
+            self = .oneWeek
+        case 30:
+            self = .oneMonth
+        case 365:
+            self = .oneYear
+        case 1095:
+            self = .threeYears
+        default:
+            self = .custom(days: days)
+        }
     }
 }

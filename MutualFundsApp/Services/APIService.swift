@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import UIKit
 
 // Temporary inline AppSettings until we add the separate file to Xcode project
 class AppSettings: ObservableObject {
@@ -197,8 +198,12 @@ class FundDetailViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var selectedTimeRange: TimeRange = .oneYear
+    @Published var customZoomDays: Int?
+    @Published var isZoomingEnabled = true
     
     private let apiService = APIService.shared
+    private let minZoomDays = 7
+    private let maxZoomDays = 1095
     
     func loadFundDetails(for fund: MutualFund, forceRefresh: Bool = false) {
         isLoading = true
@@ -231,7 +236,7 @@ class FundDetailViewModel: ObservableObject {
     }
     
     var currentPerformance: FundPerformance? {
-        return fundDetails?.performanceForPeriod(selectedTimeRange)
+        return fundDetails?.performanceForPeriod(currentTimeRange)
     }
     
     var chartData: [NAVData] {
@@ -239,23 +244,68 @@ class FundDetailViewModel: ObservableObject {
         
         let calendar = Calendar.current
         let endDate = Date()
-        let startDate: Date
+        let daysToShow: Int
         
-        switch selectedTimeRange {
-        case .oneWeek:
-            startDate = calendar.date(byAdding: .day, value: -7, to: endDate) ?? endDate
-        case .oneMonth:
-            startDate = calendar.date(byAdding: .month, value: -1, to: endDate) ?? endDate
-        case .sixMonths:
-            startDate = calendar.date(byAdding: .month, value: -6, to: endDate) ?? endDate
-        case .oneYear:
-            startDate = calendar.date(byAdding: .year, value: -1, to: endDate) ?? endDate
-        case .threeYears:
-            startDate = calendar.date(byAdding: .year, value: -3, to: endDate) ?? endDate
+        if let customDays = customZoomDays {
+            daysToShow = customDays
+        } else {
+            daysToShow = selectedTimeRange.days
         }
+        
+        let startDate = calendar.date(byAdding: .day, value: -daysToShow, to: endDate) ?? endDate
         
         return details.history.filter { navData in
             navData.dateValue >= startDate
         }.sorted { $0.dateValue < $1.dateValue }
+    }
+    
+    var currentTimeRange: TimeRange {
+        if let customDays = customZoomDays {
+            return TimeRange(days: customDays)
+        }
+        return selectedTimeRange
+    }
+    
+    func updateZoom(dragTranslation: CGSize) {
+        guard isZoomingEnabled else { return }
+        
+        let currentDays = customZoomDays ?? selectedTimeRange.days
+        let relativeSensitivity = calculateRelativeSensitivity(for: currentDays)
+        let dayChange = Int(Double(dragTranslation.width) / relativeSensitivity)
+        let newDays = max(minZoomDays, min(maxZoomDays, currentDays + dayChange))
+        
+        if newDays != currentDays {
+            #if !os(watchOS)
+            let hapticFeedback = UIImpactFeedbackGenerator(style: .light)
+            hapticFeedback.impactOccurred()
+            #endif
+            
+            if TimeRange.allCases.contains(where: { $0.days == newDays }) {
+                customZoomDays = nil
+                selectedTimeRange = TimeRange(days: newDays)
+            } else {
+                customZoomDays = newDays
+            }
+        }
+    }
+    
+    func resetZoom() {
+        customZoomDays = nil
+    }
+    
+    private func calculateRelativeSensitivity(for currentDays: Int) -> Double {
+        // Adjust sensitivity based on time frame for optimal control:
+        // - Short periods (< 1 month): Ultra-high sensitivity for precise control
+        // - Medium periods (1 month - 1 year): Standard sensitivity 
+        // - Long periods (> 1 year): Lower sensitivity for broader changes
+        
+        switch currentDays {
+        case 0..<30:        // < 1 month: Ultra-high sensitivity (very precise)
+            return 0.05
+        case 30..<365:      // 1 month - 1 year: Standard sensitivity
+            return 1.0
+        default:            // > 1 year: Lower sensitivity (broad changes)
+            return 5.0
+        }
     }
 }
