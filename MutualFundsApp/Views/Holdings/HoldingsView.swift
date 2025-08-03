@@ -85,12 +85,10 @@ struct HoldingsView: View {
                     PortfolioSummaryView(summary: portfolio.summary)
                         .padding(.horizontal, 8)
                     
-                    // Holdings List
+                    // Holdings List  
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
-                            Spacer()
-                            
-                            // Sort Options (center)
+                            // Sort Options (aligned with fund names)
                             Menu {
                                 ForEach(SortOption.allCases, id: \.self) { option in
                                     Button(action: {
@@ -110,22 +108,16 @@ struct HoldingsView: View {
                                     Text(selectedSortOption.rawValue)
                                         .font(.subheadline)
                                         .fontWeight(.medium)
+                                        .underline()
                                     Image(systemName: "chevron.down")
                                         .font(.caption)
                                 }
-                                .foregroundColor(.secondary)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(Color.gray.opacity(0.1))
-                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                )
+                                .foregroundColor(.black)
                             }
                             
                             Spacer()
                         }
-                        .padding(.horizontal, 8)
+                        .padding(.horizontal, 16)
                         
                         LazyVStack(spacing: 8) {
                             ForEach(sortedHoldings(portfolio.holdings)) { holding in
