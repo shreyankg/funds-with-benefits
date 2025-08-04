@@ -239,6 +239,7 @@ The app provides professional-grade financial analysis with accurate calculation
 
 - **Advanced Functionality**
   - Push notifications for significant fund movements and portfolio alerts
+  - Custom alerts and notifications for user-defined fund conditions and thresholds
   - Fund comparison tools with side-by-side analysis
   - Advanced filtering options (AUM, expense ratio, fund manager history)
   - Export functionality (PDF reports, CSV data, Excel compatibility)
